@@ -149,15 +149,18 @@ replay_pid*
 !.ai-harness/memory/ephemeral_feedback/.gitkeep
 .tools/
 
-# --- Varios ------------------------------------------------------------------
-migrate_working_dir/
 
 
-# Build de módulos Android
+
+
+# --- Builds de módulos por plataforma ---------------------------------------
+
 /android/build/
 
-# Shim P2P precompilado por ABI (ADR-0003)
-!/android/app/src/main/jniLibs/**/*.so
+# Excepciones explícitas: binarios que el proyecto decida versionar
+# Ejemplo: !/android/app/src/main/jniLibs/**/*.so
 
-# SPECTRA Harness Cache
-.spectra/
+
+# --- Fin del .gitignore ------------------------------------------------------
+# Regla: una sección por tecnología o riesgo. Sin entradas huérfanas ni
+# excepciones implícitas: toda excepción se documenta en su línea.
