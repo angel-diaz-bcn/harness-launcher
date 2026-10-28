@@ -1,6 +1,7 @@
 # ---------------------------------------------------------------------------
-# FLIK — exclusión de contexto para asistentes de IA
+# <PROYECTO> — exclusión de contexto para asistentes de IA
 # No sustituye a .gitignore; evita leer binarios, secretos y artefactos.
+# Base agnóstica + apéndices por stack.
 # ---------------------------------------------------------------------------
 
 # Secretos y configuración local

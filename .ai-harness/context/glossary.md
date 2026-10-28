@@ -1,95 +1,74 @@
-# FLIK — Glosario de Dominio
+# Glosario
 
-Términos canónicos. Si una spec usa un término distinto, debe mapearlo aquí.
+Vocabulario compartido. Un término ambiguo genera specs contradictorias, así que
+cada palabra con significado de negocio o de arquitectura se define aquí.
 
 ---
 
-## Contenido y catálogo
+## 1. Términos de arnés
 
 | Término | Definición |
 |---|---|
-| **Catálogo** | Documento JSON con títulos, metadatos, variantes y enlaces magnet. |
-| **Fuente de catálogo** | Origen remoto o local del que se obtiene un catálogo. |
-| **Ítem** | Entrada de catálogo que representa una película, serie o contenido. |
-| **Variante** | Calidad o release concreto de un ítem; contiene el magnet que se reproduce. |
-| **Magnet** | URI que identifica contenido P2P mediante un info-hash y trackers opcionales. |
-| **Info-hash** | Huella que identifica un torrent. Se normaliza a 40 caracteres hex. |
-| **Tracker** | Servicio que ayuda a descubrir peers. |
-| **DHT** | Red distribuida de descubrimiento de peers sin tracker central. |
-| **Peer** | Nodo conectado que intercambia piezas. |
-| **Seeder** | Peer que tiene todas las piezas. |
-| **Leecher** | Peer que aún no tiene todas las piezas. |
-| **Pieza** | Unidad de descarga y verificación de BitTorrent. |
-| **Prebuffer** | Datos mínimos que deben estar disponibles antes de iniciar la reproducción. |
-| **Perfil** | Identidad local del dispositivo, sin cuenta ni servidor. Agrupa canales y progreso. |
-| **Canal** | Unidad de entrada de FLIK: contenedor de una o más listas de catálogo, con nombre, arte y estado de fuente. **No** es un canal de TV en directo, **no** es un `kind` del contrato de catálogo y **no** implica emisión lineal. |
-| **Fuente de un canal** | Lista JSON local o remota a la que está conectado un canal. |
-| **Home del canal** | Portada del canal activo: hero, filas y colecciones derivadas de sus fuentes. |
-| **Colección** | Fila declarada en el catálogo con título, tipo y lista ordenada de ítems. |
-| **Progreso** | Punto de visualización guardado localmente por perfil, ítem y episodio. |
+| **Arnés** | Conjunto de reglas, contexto, specs, memoria y validadores que restringen y guían el trabajo del agente |
+| **Contexto** | Documento normativo de `context/`; es la verdad del sistema |
+| **Scope** | Límite de escritura de un bloque: qué rutas puede tocar y cuáles no |
+| **Spec** | Contrato técnico en `<ID>-<slug>.spec.md` con front matter y trazabilidad |
+| **Historia de usuario** | Brief de producto (`user_story.md`); responde al porqué |
+| **Trazabilidad** | Cadena `FR/ST → CT → archivo::símbolo → TC` que une requisito, contrato, código y prueba |
+| **Modo de fallo** | Error recurrente documentado con síntoma, riesgo, prevención y verificación |
+| **ADR** | Registro inmutable de una decisión de arquitectura |
+| **Skill** | Herramienta ejecutable del arnés con manifiesto, runner y documentación |
+| **Puerta de validación** | Validador que debe pasar para cerrar un cambio |
 
-## Streaming y reproducción
+## 2. Términos de SDD
 
 | Término | Definición |
 |---|---|
-| **Streaming secuencial** | Descarga priorizando cabeceras y avance continuo desde el punto de reproducción. |
-| **Búfer de anillo** | Búfer acotado que evicta datos ya vistos para liberar memoria/disco. |
-| **Endpoint local** | Servidor HTTP interno en `127.0.0.1:8888/stream`. |
-| **Range Request** | Petición HTTP de un intervalo de bytes. |
-| **206** | Respuesta `Partial Content` que habilita seeking sobre el flujo local. |
-| **Seeking** | Salto a otra posición temporal del contenido. |
-| **OSD** | On-Screen Display: controles superpuestos del reproductor. |
-| **Pista** | Flujo de audio o subtítulo dentro del contenedor. |
-| **Fallback** | Cambio de decodificación hardware a software cuando la primera falla. |
+| `CMP-NN` | Identificador de componente |
+| `PRC-NN` | Identificador de proceso |
+| `FR-NN` | Requisito funcional de un componente |
+| `ST-NN` | Paso observable de un proceso |
+| `BR-NN` | Regla de negocio |
+| `INV-NN` | Invariante que nunca puede violarse |
+| `CT-NN` | Contrato de datos |
+| `TC-NN` | Caso de prueba |
+| `AC-NN` | Criterio de aceptación |
+| `US-NN` | Criterio de negocio de la historia de usuario |
+| `DRAFT` | Spec en elaboración; no se implementa |
+| `APPROVED` | Spec aprobada; el código debe cumplirla |
+| `SUPERSEDED` | Spec reemplazada; apunta a su sustituta |
 
-## Interfaz y TV
-
-| Término | Definición |
-|---|---|
-| **D-Pad** | Cruceta del mando de TV. |
-| **Foco** | Elemento que recibe las acciones de D-Pad/teclado. |
-| **Focus trap** | Estado en el que el foco no puede salir de una zona o control. |
-| **Billboard** | Bloque destacado con backdrop, título y acciones. |
-| **Carrusel** | Fila horizontal de tarjetas. |
-| **Leanback** | Modo de Android TV para experiencias de sofá. |
-| **Safe area / overscan** | Zona segura que evita que la TV recorte la interfaz. |
-| **Pantalla de reproducción** | Vista a pantalla completa del reproductor con su OSD. No se denomina «visualización». |
-| **Tarjeta** | Componente que representa un ítem o espacio en una fila o rejilla. |
-| **Afinidad local** | Coincidencia calculada en el dispositivo entre los géneros de un ítem y el progreso del perfil. Nunca proviene de un servidor. |
-
-## Arquitectura y proceso
+## 3. Términos de arquitectura
 
 | Término | Definición |
 |---|---|
-| **Feature** | Unidad vertical de `lib/features/` con dominio, datos y presentación. |
-| **Scope** | Documento que limita qué puede modificar un bloque. |
-| **Spec `.spec.md`** | Especificación SDD canónica de un componente o proceso. |
-| **FR** | Requisito funcional de una spec de componente. |
-| **ST** | Paso de una spec de proceso. |
-| **CT** | Contrato de datos o interfaz. |
-| **TC** | Caso de prueba. |
-| **AC** | Criterio de aceptación. |
-| **INV** | Invariante que nunca puede violarse. |
-| **ADR** | Registro de decisión de arquitectura. |
+| **Feature** | Slice funcional vertical con sus capas internas |
+| **Core** | Infraestructura transversal sin lógica de negocio |
+| **Composition root** | Punto único donde se ensamblan dependencias |
+| **API pública** | Superficie que una feature expone a otras: barrel o carpeta `public/` |
+| **DTO** | Objeto de transferencia entre fuente de datos y dominio |
+| **Entidad** | Objeto del dominio con identidad y reglas |
+| **Caso de uso** | Operación de negocio con entrada y salida tipadas |
+| **Contrato** | Interfaz o tipo que define qué se promete, no cómo se cumple |
+| **Invariante** | Propiedad que debe cumplirse siempre, en todo estado |
 
------
+## 4. Términos de diseño
 
+| Término | Definición |
+|---|---|
+| **Token** | Valor visual con nombre y rol, definido en `tokens.json` |
+| **Foco** | Elemento que recibe la entrada del teclado o D-Pad |
+| **Área segura** | Zona donde el contenido no se recorta por overscan o notch |
+| **Blueprint** | Estructura funcional de una pantalla, sin valores visuales |
 
-## 2. Convenio de carátulas (lo que me pediste)
+## 5. Términos de producto
 
-No voy a introducir ninguna imagen. El catálogo semilla irá __sin `poster_uri` ni `backdrop_uri`__, y la UI mostrará un __placeholder__ conforme a tokens (`surface.base` / `surface.elevated` + icono `FlikIconSizes.lg`, sin HEX ni degradados decorativos).
+`<Añadir aquí el vocabulario específico del dominio: entidades, roles, estados,
+unidades de medida y sinónimos aceptados.>`
 
-Cuando tú aportes las imágenes, el convenio será:
+## 6. Regla de uso
 
-assets/
-├── covers/     → carátula vertical 2:3   →  <id>.jpg   (recomendado 1000×1500)
-└── backdrops/  → fondo horizontal 16:9   →  <id>.jpg   (recomendado 1920×1080)
-
-- `<id>` es __exactamente__ el `id` del catálogo (minúsculas, guiones, sin acentos): `blade-runner-2049.jpg`, `the-expanse.jpg`, `sintel.jpg`.
-- Formato único `.jpg` (si algún día quieres `.webp`, se decide antes de cargar los archivos).
-- El contrato __ya soporta__ rutas locales: `poster_uri: "asset:assets/covers/<id>.jpg"` (verificado en `CMP-01` y en el parser, que admite `asset:` además de `http(s)`).
-- Flujo previsto: tú dejas los archivos → yo actualizo el JSON semilla con los `asset:` URIs → `pubspec.yaml` declara `assets/covers/` y `assets/backdrops/` → la UI deja de usar el placeholder para esos ítems.
-- __Importante:__ `assets/covers/` debe existir en el repo aunque esté vacío (con `.gitkeep`), porque Flutter falla si un directorio declarado en `pubspec.yaml` no existe.
-
-
- 
+- Si un término del código no aparece aquí, o falta el término o sobra el
+  concepto.
+- Prohibido usar dos palabras para el mismo concepto en documentos distintos.
+- Un sinónimo aceptado se registra explícitamente como tal.

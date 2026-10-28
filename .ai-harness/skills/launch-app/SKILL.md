@@ -1,6 +1,6 @@
 ---
 name: launch-app
-description: Arranca la aplicación Flutter de FLIK en el dispositivo o plataforma indicada.
+description: Arranca la aplicación (stack Flutter) en el dispositivo o plataforma indicada.
 ---
 
 # Launch App
@@ -21,5 +21,5 @@ Si no se indica dispositivo, usa `windows`, `macos` o `linux` según el sistema.
 
 - Requiere `pubspec.yaml` en la raíz.
 - No existe backend ni frontend web.
-- El endpoint `127.0.0.1:8888/stream` lo crea la app al iniciar una sesión P2P.
+- El endpoint local lo crea la app al iniciar y nunca se expone fuera de loopback.
 - No abrir puertos externos.

@@ -1,20 +1,33 @@
----
-name: launch-app
-description: Arranca la aplicación Flutter de FLIK en el dispositivo o plataforma indicada.
----
+# launch-app
 
-# Launch App
+Arranca la aplicación en el dispositivo o plataforma indicada. Requiere un
+proyecto Flutter; en otro stack, este skill no aplica.
+
+## Comando
 
 ```bash
-# Ver emuladores disponibles (ej. FLIK_TV, FLIK_PHONE_30)
-python .ai-harness/skills/launch-app/runner.py --list-emulators
-
-# Lanzar el emulador de TV y ejecutar FLIK directamente:
-python .ai-harness/skills/launch-app/runner.py --emulator FLIK_TV
-
-# O ver dispositivos conectados y ejecutar en uno específico:
 python .ai-harness/skills/launch-app/runner.py --list
 python .ai-harness/skills/launch-app/runner.py --device windows
+python .ai-harness/skills/launch-app/runner.py --device android --emulator <ID>
 ```
 
-Requiere `pubspec.yaml` en la raíz. No existe backend ni frontend web. El endpoint local lo crea la app al iniciar una sesión P2P.
+## Parámetros
+
+| Parámetro | Descripción |
+|---|---|
+| `--device` | Identificador de dispositivo (`windows`, `macos`, `linux`, `android` o un ID de la herramienta) |
+| `--emulator` | ID del emulador que se debe iniciar antes de arrancar la app |
+| `--list` | Lista los dispositivos disponibles y termina |
+
+## Qué hace
+
+1. Localiza la raíz del proyecto por su manifiesto.
+2. Comprueba que el SDK del stack está disponible.
+3. Arranca el emulador si se indicó y espera a que esté listo.
+4. Ejecuta la app y reporta el resultado.
+
+## Reglas
+
+- No levanta servicios auxiliares ni backends intermedios.
+- No abre puertos externos.
+- Los endpoints locales que necesite la app los crea la propia app.

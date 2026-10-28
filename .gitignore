@@ -1,5 +1,7 @@
 # ---------------------------------------------------------------------------
-# FLIK — archivos que no deben subirse a GitLab
+# <PROYECTO> — archivos que no deben versionarse
+# Base agnóstica + apéndices por stack. Al copiar la plantilla a un proyecto,
+# elimina los apéndices que no apliquen y conserva los que sí.
 # ---------------------------------------------------------------------------
 
 # --- Secretos y credenciales -------------------------------------------------

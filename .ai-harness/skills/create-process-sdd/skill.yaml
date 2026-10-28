@@ -1,7 +1,7 @@
 name: create-process-sdd
 version: 2.0.0
 description: >-
-  Crea el esqueleto de una spec de proceso FLIK (PRC) desde la plantilla canónica.
+  Crea el esqueleto de una spec de proceso (PRC-NN) desde la plantilla canónica.
 cli_dependencies:
   - python
 inputs:

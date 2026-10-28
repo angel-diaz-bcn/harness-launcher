@@ -1,41 +1,41 @@
----
-name: create-component-sdd
-description: Genera o actualiza la especificación técnica de un componente Flutter de FLIK (CMP-NN) bajo la plantilla canónica `.spec.md`.
----
+# create-component-sdd
 
-# Create Component SDD Skill
+Crea el esqueleto de una spec de componente (`CMP-NN`) a partir de la plantilla
+canónica.
 
-Genera o actualiza especificaciones técnicas de **Componentes** en:
-
-- `.ai-harness/sdd/1_COMPONENTS/bootstrap/` para `CMP-00` (infraestructura de arranque).
-- `.ai-harness/sdd/1_COMPONENTS/frontend/` para `CMP-NN`.
-- `.ai-harness/sdd/1_COMPONENTS/backend/` para el resto de `CMP-NN` (lógica local, no servidor).
-
-## Convención obligatoria
-
-- Carpeta: `<ID>-<slug>/`.
-- Archivo: `<ID>-<slug>.spec.md`.
-- Historia: `user_story.md`.
-- Plantilla: `.ai-harness/sdd/templates/TEMPLATE_COMPONENT_SDD.md`.
-- Reglas completas: `.ai-harness/sdd/templates/README.md`.
-
-## Directrices anti-deriva
-
-- **Cero placeholders:** prohibido dejar secciones vacías o textos genéricos en una spec aprobada.
-- **Contratos reales:** modelos Dart inmutables, interfaces y errores tipados; sin `dynamic` injustificado.
-- **Trazabilidad:** cada `FR-*` se mapea a `CT-*`, archivo::símbolo y `TC-*`.
-- **UI:** solo tokens de `ui-design-system.md`; prohibido HEX literales.
-- **BDD:** al menos dos escenarios Gherkin, uno de éxito y otro de error o caso borde.
-- **Sin invención:** si falta información, se registra en `Q-*` y se detiene la implementación.
-
-## Instrucciones de ejecución
+## Comando
 
 ```bash
-python .ai-harness/skills/create-component-sdd/runner.py CMP-10 \
-  --name "Billboard Hero" \
-  --target lib/features/tv_experience/presentation/widgets/billboard_hero.dart \
-  --layer frontend \
-  --dir .ai-harness/sdd/1_COMPONENTS/frontend/CMP-10-billboard-hero
+python .ai-harness/skills/create-component-sdd/runner.py CMP-01 \
+  --name "Nombre del componente" \
+  --target lib/<ruta>/<archivo> \
+  --dir .ai-harness/sdd/1_COMPONENTS/<capa>/CMP-01-<slug>
 ```
 
-El runner crea `user_story.md` y `<ID>-<slug>.spec.md` desde la plantilla. Completar todos los placeholders y validar el checklist de `.ai-harness/sdd/templates/README.md` antes de cambiar el estado a `APPROVED` y registrar la aprobación.
+## Parámetros
+
+| Parámetro | Obligatorio | Descripción |
+|---|---|---|
+| `component_id` | Sí | `CMP-NN`; el prefijo viene de la configuración |
+| `--name` | Sí | Nombre legible del componente |
+| `--target` | Sí | Ruta de implementación bajo una ruta autorizada |
+| `--dir` | Sí | Carpeta donde se crean spec e historia |
+| `--layer` | No | `bootstrap`, `domain` o `ui`; se infiere de `--dir` |
+| `--force` | No | Sobrescribe un esqueleto existente |
+
+## Qué genera
+
+- `<ID>-<slug>.spec.md` con el front matter de la plantilla sustituido.
+- `user_story.md` con la estructura de historia de usuario.
+
+## Después de ejecutarla
+
+1. Completar front matter y todas las secciones obligatorias.
+2. Definir `FR-*`, `CT-*` y `TC-*`.
+3. Rellenar el mapa de implementación con rutas y símbolos reales.
+4. Cambiar a `APPROVED` solo con el checklist completo.
+
+## Reglas
+
+- No inventa identificadores ni capas: los lee de `harness.config.yaml`.
+- No sobrescribe sin `--force`.

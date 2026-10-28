@@ -11,6 +11,6 @@ python .ai-harness/skills/preflight/runner.py --strict
 python .ai-harness/skills/preflight/runner.py --json
 ```
 
-Checks: `dart format`, `flutter analyze`, `flutter test`, imports entre features, inmutabilidad, endpoint `127.0.0.1:8888/stream`, ausencia de backend/proxy, tokens de diseño y dependencias prohibidas.
+Checks: formato, análisis estático, tests, imports entre features, inmutabilidad, tokens de diseño, dependencias prohibidas y, si hay perfil activo, invariantes de dominio.
 
 No usa herramientas del proyecto anterior.

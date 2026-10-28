@@ -1,7 +1,7 @@
 name: launch-app
 version: 2.0.0
 description: >-
-  Arranca la aplicación Flutter de FLIK en el dispositivo o plataforma indicada.
+  Arranca la aplicación (stack Flutter) en el dispositivo o plataforma indicada.
 cli_dependencies:
   - flutter
 inputs:

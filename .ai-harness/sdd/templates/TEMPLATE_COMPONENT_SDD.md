@@ -3,7 +3,7 @@
 ---
 spec_id: CMP-<NN>
 spec_type: CMP
-layer: <bootstrap|backend|frontend>
+layer: <bootstrap|domain|ui>
 name: <Nombre del componente>
 target: <ruta/exacta/al/archivo.dart>
 block: <feature>
@@ -31,7 +31,7 @@ consumed_by: [<CMP-...>]
 > [!IMPORTANT]
 > **Contrato de lectura rápida.** Esta spec es la fuente de verdad del comportamiento. El código no puede añadir campos, estados, reglas ni estilos que no estén aquí o en los documentos referenciados.
 >
-> **Archivo:** `<nombre>.spec.md` · **Plantilla:** Componente FLIK · **Diseño:** `ui-design-system.md`
+> **Archivo:** `<nombre>.spec.md` · **Plantilla:** Componente · **Diseño:** `ui-design-system.md`
 
 > [!TIP]
 > **Ruta de lectura:** §4 requisitos → §8 contratos → §10 trazabilidad → §11 pruebas. Si falta un dato, ve a §15 y detén la implementación.
@@ -163,9 +163,9 @@ Casos borde obligatorios: datos vacíos, datos corruptos, cancelación, cierre d
 
 ---
 
-## 7. UX/UI y foco (solo `layer: frontend`)
+## 7. UX/UI y foco (solo `layer: ui`)
 
-> Para `bootstrap` o `backend`, indicar “No aplica” y eliminar esta sección del documento final.
+> Para `bootstrap` o `domain`, indicar “No aplica” y eliminar esta sección del documento final.
 
 - **Tokens:** usar exclusivamente los nombres de `ui-design-system.md` (`canvas`, `surface`, `accent`, `textPrimary`, `textSecondary`). Prohibido HEX literales.
 - **Jerarquía:** <título, metadatos, acciones.>

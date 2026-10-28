@@ -1,37 +1,42 @@
----
-name: create-process-sdd
-description: Genera o actualiza la especificación técnica de un flujo de FLIK (PRC-XX) bajo la plantilla canónica `.spec.md`.
----
+# create-process-sdd
 
-# Create Process SDD Skill
+Crea el esqueleto de una spec de proceso (`PRC-NN`) a partir de la plantilla
+canónica.
 
-Genera o actualiza especificaciones de **Procesos** en `.ai-harness/sdd/2_PROCESSES/`.
-
-## Convención obligatoria
-
-- Carpeta: `<ID>-<slug>/`.
-- Archivo: `<ID>-<slug>.spec.md`.
-- Historia: `user_story.md`.
-- Plantilla: `.ai-harness/sdd/templates/TEMPLATE_PROCESS_SDD.md`.
-- Reglas completas: `.ai-harness/sdd/templates/README.md`.
-
-## Directrices anti-deriva
-
-- **Cero placeholders:** prohibido dejar secciones vacías o resúmenes informales.
-- **Diagrama real:** el diagrama Mermaid debe coincidir con los pasos `ST-*`.
-- **Mapeo campo a campo:** toda transformación de datos se declara explícitamente.
-- **Recursos:** cada paso define éxito, error, cancelación y liberación de recursos.
-- **Trazabilidad:** cada `ST-*` se mapea a `CT-*`, archivo::símbolo y `TC-*`.
-- **BDD:** al menos dos escenarios Gherkin, uno de éxito y otro de fallo/recuperación.
-- **Sin invención:** si falta información, se registra en `Q-*` y se detiene la implementación.
-
-## Instrucciones de ejecución
+## Comando
 
 ```bash
 python .ai-harness/skills/create-process-sdd/runner.py PRC-01 \
-  --name "Reproducción magnet" \
-  --target lib/features/tv_experience/application/playback_coordinator.dart \
-  --dir .ai-harness/sdd/2_PROCESSES/playback/PRC-01-magnet-playback
+  --name "Nombre del proceso" \
+  --target lib/<ruta>/<archivo> \
+  --dir .ai-harness/sdd/2_PROCESSES/PRC-01-<slug> \
+  --block <bloque>
 ```
 
-El runner crea `user_story.md` y `<ID>-<slug>.spec.md` desde la plantilla. Completar todos los placeholders y validar el checklist de `.ai-harness/sdd/templates/README.md` antes de cambiar el estado a `APPROVED` y registrar la aprobación.
+## Parámetros
+
+| Parámetro | Obligatorio | Descripción |
+|---|---|---|
+| `process_id` | Sí | `PRC-NN`; el prefijo viene de la configuración |
+| `--name` | Sí | Nombre legible del proceso |
+| `--target` | Sí | Ruta de implementación bajo una ruta autorizada |
+| `--dir` | Sí | Carpeta donde se crean spec e historia |
+| `--block` | No | Bloque propietario del proceso |
+| `--force` | No | Sobrescribe un esqueleto existente |
+
+## Qué genera
+
+- `<ID>-<slug>.spec.md` con el front matter de la plantilla sustituido.
+- `user_story.md` con la estructura de historia de usuario.
+
+## Después de ejecutarla
+
+1. Definir pasos `ST-*`, contratos `CT-*` y pruebas `TC-*`.
+2. Documentar el caso de error y el de cancelación.
+3. Rellenar el mapa de implementación.
+4. Cambiar a `APPROVED` solo con el checklist completo.
+
+## Reglas
+
+- Un proceso cruza dos o más componentes; si no, es un componente.
+- No inventa identificadores: los lee de `harness.config.yaml`.

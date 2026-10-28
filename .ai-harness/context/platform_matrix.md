@@ -1,114 +1,67 @@
-# FLIK — Matriz de Plataformas
+# Plataformas y matriz de soporte
 
-Restricciones y obligaciones por plataforma. Ninguna plataforma puede asumir comportamiento de otra.
-
----
-
-## 1. Matriz general
-
-| Plataforma | Entrada principal | Empaquetado | Foco obligatorio |
-|---|---|---|---|
-| Android TV | D-Pad / mando | APK/AAB con Leanback | Sí |
-| Android móvil | Táctil | APK/AAB | Teclado externo opcional |
-| Windows | Teclado / ratón | Instalador o MSIX | Flechas + Enter |
-| macOS | Teclado / trackpad | App bundle / DMG | Flechas + Enter |
-| Linux | Teclado / ratón | AppImage / Flatpak / paquete | Flechas + Enter |
+Qué plataformas se soportan, con qué entrada se usan y qué restricciones
+imponen al diseño.
 
 ---
 
-## 2. Android TV
+## 1. Matriz
 
-- Declarar Leanback launcher y banner de TV.
-- Soportar `KEYCODE_DPAD_*`, `KEYCODE_DPAD_CENTER` y `KEYCODE_BACK`.
-- No depender de hover, scroll táctil ni barra de estado.
-- Respetar overscan y distancia de sofá.
-- Cuidar memoria y almacenamiento: el búfer debe evictar.
-- Verificar decodificación hardware por SoC; prever fallback software.
-- Probar con mando real o emulador TV, no solo teléfono.
+| Plataforma | Entrada principal | Restricciones relevantes |
+|---|---|---|
+| `<plataforma A>` | `<teclado / táctil / D-Pad>` | `<memoria, permisos, ciclo de vida>` |
+| `<plataforma B>` | `<...>` | `<...>` |
+| `<plataforma C>` | `<...>` | `<...>` |
 
-### 2.1 Emuladores (entorno local de desarrollo)
+Al copiar la plantilla, esta tabla debe describir plataformas reales del
+producto, no genéricas.
 
-| AVD | Imagen | Uso | Estado |
-|---|---|---|---|
-| `FLIK_TV` | `android-36;android-tv;x86_64` | Maquetación, foco y D-Pad | **No sirve para vídeo**: incluso con `hw.gpu.mode=host`, la imagen Android TV 16 no compone la textura de `media_kit` (imagen negra con audio y subtítulos correctos). Usar solo para UI |
-| `FLIK_PHONE_30` | `android-30;google_apis;x86_64` | Reproducción real (intro y película) | **Verificado**: intro de FLIK y película con imagen y audio, con `-gpu host` |
-| Dispositivo físico `24094RAD4G` | `android-36` · `arm64-v8a` · USB | **Entorno de referencia para reproducción** | **Verificado**: intro de FLIK, película y OSD completos. Confirma que el fallo de vídeo de `FLIK_TV` es de la imagen del emulador, no de Android 16 |
+## 2. Reglas transversales
 
-- La imagen API 36 expone `ANDROID_EMU_gles_max_version_3_0` y su `libEGL` rechaza los
-  atributos que pide `libmpv`; el reloj y el audio avanzan pero la superficie queda negra.
-- La imagen API 30 acepta esos atributos: la misma APK reproduce Sintel con imagen y audio.
-- Arrancar siempre con `-gpu host` (con `auto`/`swiftshader` el AVD cae en GL por software).
-- Scripts: `.spikes/S0-libtorrent/launch-emulator.ps1` (TV) y `launch-emulator-phone30.ps1`
-  (reproducción).
+- Toda funcionalidad declara en qué plataformas aplica.
+- Una funcionalidad que no aplique en una plataforma debe degradar de forma
+  explícita, no romper.
+- Prohibido asumir que una capacidad existe: se comprueba en tiempo de ejecución.
+- Los recursos se dimensionan para la plataforma con menos memoria disponible.
 
+## 3. Entrada y accesibilidad
 
-## 3. Android móvil
+- Toda acción es alcanzable con teclado o D-Pad, además de ratón o táctil.
+- El foco es visible y persistente.
+- Prohibido depender de hover o de gestos no descubribles.
+- Las áreas táctiles respetan el tamaño mínimo declarado en el sistema de diseño.
 
-- Targets táctiles mínimos de 48×48 dp.
-- Gestionar ciclo de vida, audio focus y interrupciones.
-- No asumir D-Pad; permitir teclado externo.
-- Adaptar el layout sin romper el árbol de foco.
-- Verificar reproducción en pantalla pequeña y rotación.
+## 4. Recursos
 
-## 4. Windows
+| Recurso | Regla |
+|---|---|
+| Memoria | Toda caché declara límite y evicción |
+| Almacenamiento | Prohibido crecer sin límite; se define retención |
+| Red | Solo conexiones declaradas; reintentos con retroceso |
+| Batería | Prohibido trabajo periódico sin justificación |
 
-- Ventana redimensionable y atajos de teclado.
-- Verificar decodificación D3D11VA y fallback software.
-- Empaquetar con firma y actualizaciones controladas.
-- No asumir rutas POSIX ni permisos de administrador.
+## 5. Códecs y formatos
 
-## 5. macOS
+Si el producto procesa medios o documentos:
 
-- Verificar VideoToolbox y fallback software.
-- Revisar notarización, sandbox y permisos de red local.
-- No asumir que el usuario ejecuta como administrador.
-- Probar en Intel y Apple Silicon si se distribuye universal.
+- Se declara la lista de formatos soportados por plataforma.
+- Un formato no soportado se informa al usuario; no se convierte en silencio.
+- La decodificación por hardware se prefiere cuando está disponible.
+- Todo formato nuevo requiere prueba en cada plataforma declarada.
 
-## 6. Linux
+Si el producto no procesa medios, esta sección se declara como no aplicable.
 
-- Verificar VA-API y fallback software.
-- Soportar Wayland y X11.
-- Empaquetar dependencias de MPV/FFmpeg de forma reproducible.
-- Documentar dependencias del sistema.
+## 6. Verificación por plataforma
 
----
+| Comprobación | Cómo |
+|---|---|
+| Arranque correcto | Ejecución en cada plataforma soportada |
+| Entrada completa | Recorrido de foco de extremo a extremo |
+| Degradación | Prueba con capacidad ausente simulada |
+| Recursos | Medición de memoria y almacenamiento en sesión larga |
 
-## 7. Códecs y contenedores
+## 7. Prohibiciones
 
-- Contenedores objetivo: MKV, MP4/M4V, WebM.
-- Vídeo: H.264 y HEVC como base; VP9/AV1 según capacidad de plataforma.
-- Audio: AAC, MP3, AC3, EAC3, DTS, FLAC, Opus.
-- Subtítulos: SRT, WebVTT, ASS/SSA y PGS cuando el motor los soporte.
-- El fallback software es obligatorio cuando el hardware falla.
-- La matriz exacta de códecs por plataforma se fija en la spec del reproductor.
-
----
-
-## 8. Almacenamiento
-
-- Catálogo y progreso: almacenamiento local ligero.
-- Búfer P2P: directorio temporal de sesión, acotado y evictable.
-- Prohibido usar el almacenamiento de catálogo para piezas de vídeo.
-- Limpiar sesiones huérfanas al arrancar.
-- Respetar cuotas y permisos de Android TV.
-
----
-
-## 9. Red
-
-- El endpoint de vídeo es siempre `127.0.0.1:8888/stream`.
-- El puerto debe comprobarse antes de abrir; si está ocupado, fallar con error explícito.
-- No abrir el puerto a la LAN.
-- UPnP/NAT-PMP desactivado por defecto.
-- La app debe funcionar sin conexión para catálogo cacheado y progreso.
-
----
-
-## 10. Verificación mínima por plataforma
-
-- Compila y arranca.
-- Navega todo el catálogo con la entrada principal.
-- Abre un magnet de prueba y reproduce.
-- Hace seeking y cambia pistas.
-- Cierra la reproducción y libera el puerto.
-- No deja procesos, sockets ni archivos temporales.
+- Añadir una plataforma sin actualizar esta matriz.
+- Usar una API exclusiva de una plataforma en la capa de dominio.
+- Declarar soporte sin haber ejecutado la verificación correspondiente.

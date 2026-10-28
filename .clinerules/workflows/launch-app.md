@@ -1,8 +1,9 @@
-# Workflow — Arranque de FLIK
+# Workflow — Arranque de la aplicación
 
 ## Objetivo
 
-Arrancar la aplicación Flutter en el dispositivo o plataforma solicitada.
+Arrancar la aplicación en el dispositivo o plataforma solicitada. Requiere que
+el proyecto sea Flutter; en otro stack, este workflow no aplica.
 
 ## Protocolo
 
@@ -22,5 +23,6 @@ Ejemplos de `device`: `windows`, `macos`, `linux`, `android`, o el ID que devuel
 
 - No existe backend ni frontend web que levantar.
 - No abrir puertos externos.
-- El endpoint `127.0.0.1:8888/stream` lo crea la propia app cuando inicia una sesión P2P.
+- El endpoint local que necesite la app lo crea la propia app al iniciar; nunca
+  se expone fuera de loopback.
 - No levantar servicios web ni backends intermedios.

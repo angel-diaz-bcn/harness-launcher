@@ -1,8 +1,8 @@
-# Workflow — Preflight de FLIK
+# Workflow — Preflight del producto
 
 ## Disparador
 
-Cambios en código Dart/Flutter, configuración, assets o dependencias.
+Cambios en código, configuración, assets o dependencias.
 
 ## Protocolo
 
@@ -25,16 +25,16 @@ python .ai-harness/skills/preflight/runner.py [target]
 
 ## Checks esperados
 
-- `dart format` y `flutter analyze`.
-- `flutter test`.
-- fronteras de imports entre features.
-- contratos inmutables en dominio/modelos.
-- endpoint local y ausencia de backend/proxy.
-- tokens de diseño, sin HEX hardcodeados.
-- dependencias prohibidas en `pubspec.yaml`.
+- formato y análisis estático del stack declarado.
+- suite de tests.
+- fronteras de imports entre features (`architecture` en la configuración).
+- contratos inmutables en dominio y modelos.
+- tokens de diseño, sin valores literales.
+- dependencias prohibidas declaradas en la configuración.
+- checks de perfil, solo si `invariants.profile` está activo.
 
 ## Reglas
 
-- No usar herramientas del proyecto anterior: no pertenecen a FLIK.
+- No usar herramientas ni términos de otro proyecto: no pertenecen a este arnés.
 - No declarar la tarea terminada con exit code distinto de 0.
 - No desactivar checks para “hacer pasar” el pipeline.

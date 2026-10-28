@@ -1,23 +1,37 @@
----
-name: sync-sdd
-description: Deriva el estado de implementación de las specs .spec.md desde su target y una línea base de hashes.
----
+# sync-sdd
 
-# Sync SDD
+Comprueba que cada spec aprobada, su `target` y la implementación no divergen.
+
+## Comando
 
 ```bash
-python .ai-harness/skills/sync-sdd/runner.py
-python .ai-harness/skills/sync-sdd/runner.py CMP-01
+python .ai-harness/skills/sync-sdd/runner.py            # todas las specs
+python .ai-harness/skills/sync-sdd/runner.py CMP-01     # una spec concreta
+python .ai-harness/skills/sync-sdd/runner.py --baseline  # registra el estado actual
 python .ai-harness/skills/sync-sdd/runner.py --json
 ```
 
-Comprueba:
+## Estados
 
-- `user_story.md` en la carpeta de la spec.
-- `target` en el front matter.
-- estado derivado `N/A`, `MISSING`, `PRESENT` o `DIVERGED`.
-- línea base de hashes en `.ai-harness/memory/sync-state.json`.
+| Estado | Significado |
+|---|---|
+| `N/A` | La spec no está aprobada; no se espera implementación |
+| `MISSING` | El `target` no existe |
+| `PRESENT` | Target existe y coincide con el baseline |
+| `DIVERGED` | Cambió la spec o el target desde el baseline |
 
-`--baseline` registra cambios intencionales de spec o target.
+## Cuándo usarla
 
-No usa `spec.md` ni `packages/`.
+- Al cerrar una spec (`--baseline` para fijar el punto de partida).
+- Antes de publicar.
+- Tras cualquier cambio de comportamiento.
+
+## Salida
+
+Código 0 si no hay `DIVERGED`; 1 si hay divergencias. El baseline se guarda en
+`memory/sync-state.json` (no se edita a mano).
+
+## Reglas
+
+- Una divergencia se resuelve actualizando spec o código, no el estado.
+- Una spec sin `user_story.md` es una divergencia, no un aviso.

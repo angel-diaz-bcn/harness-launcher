@@ -4,8 +4,8 @@
 spec_id: PRC-<NN>
 spec_type: PRC
 name: <Nombre del proceso>
-target: <ruta/exacta/al/orquestador.dart>
-block: <playback|catalog|navigation>
+target: <ruta/exacta/al/archivo>
+block: <bloque>
 status: DRAFT
 version: 1.0
 owner: <rol responsable>
@@ -29,7 +29,7 @@ depends_on: [<PRC-...>]
 > [!IMPORTANT]
 > **El proceso orquesta, no reimplementa.** Cada paso debe delegar en un componente existente o declarar explícitamente el componente que se creará.
 >
-> **Archivo:** `<nombre>.spec.md` · **Plantilla:** Proceso FLIK · **Participantes:** `<CMP-...>`
+> **Archivo:** `<nombre>.spec.md` · **Plantilla:** Proceso · **Participantes:** `<CMP-...>`
 
 > [!TIP]
 > **Ruta de lectura:** §5 flujo → §6 pasos → §9 contratos → §11 trazabilidad → §12 pruebas. Si falta un dato, ve a §16.
@@ -222,10 +222,10 @@ final class <Proceso>Failed extends <Proceso>State {
 | `BR-01` | <regla de negocio del flujo.> | <contexto/spec> | `TC-01` |
 | `INV-01` | <invariante que nunca puede violarse.> | <architecture_rules> | `TC-02` |
 
-Ejemplos de invariantes FLIK que deben verificarse si aplican:
+Invariantes del sistema que deben verificarse si aplican:
 
-- El flujo de vídeo no pasa por backend, proxy ni transcodificación.
-- El endpoint local es `127.0.0.1:8888/stream` y responde `206`.
+- Los datos no atraviesan servicios que la arquitectura no declara.
+- El endpoint local se sirve en loopback y responde `206 Partial Content`.
 - La sesión P2P se cierra al salir de la reproducción.
 - El progreso se guarda localmente y no se envía a terceros.
 

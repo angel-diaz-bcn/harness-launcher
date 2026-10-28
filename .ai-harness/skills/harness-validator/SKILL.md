@@ -1,6 +1,6 @@
 ---
 name: harness-validator
-description: Valida contexto, scopes, memoria, SDD y skills del arnés de FLIK.
+description: Valida contexto, scopes, memoria, SDD y skills del arnés.
 ---
 
 # Harness Validator

@@ -1,89 +1,66 @@
-# FLIK — Seguridad, Privacidad y Límites de Confianza
+# Seguridad y privacidad
 
-FLIK descarga contenido de una red P2P y lo sirve en un endpoint HTTP local. Esa combinación exige un modelo de amenazas explícito.
-
----
-
-## 1. Activos a proteger
-
-- El dispositivo del usuario y sus archivos.
-- La red local y el endpoint `127.0.0.1`.
-- La biblioteca, el progreso y las preferencias locales.
-- Las fuentes de catálogo y sus credenciales, si existen.
-- La reputación y la integridad del contenido descargado.
+Reglas para no filtrar datos, no introducir superficie de ataque y no romper
+promesas de privacidad del producto.
 
 ---
 
-## 2. Amenazas principales
+## 1. Principios
 
-| ID | Amenaza | Control obligatorio |
-|---|---|---|
-| `SEC-01` | Endpoint local accesible desde la red | Bind exclusivo a `127.0.0.1`; prohibido `0.0.0.0` o interfaces LAN |
-| `SEC-02` | Otro proceso local consume el stream | Token de sesión por reproducción, comparado en tiempo constante |
-| `SEC-03` | Conflicto o secuestro del puerto 8888 | Verificar disponibilidad; fallar de forma explícita; no reutilizar una sesión ajena |
-| `SEC-04` | Path traversal desde nombres de archivo del torrent | Normalizar y confinar rutas a un directorio de sesión; rechazar `..`, rutas absolutas y enlaces |
-| `SEC-05` | Magnet o torrent malicioso | Validar info-hash, tamaño, número de archivos y metadatos antes de abrir |
-| `SEC-06` | Archivo de vídeo corrupto o malicioso | Ejecutar MPV/FFmpeg actualizados; no confiar en el contenedor; aislar fallos |
-| `SEC-07` | Catálogo remoto con URLs maliciosas | Allowlist de esquemas; rechazar `file:`, `javascript:` y credenciales embebidas |
-| `SEC-08` | Fuga de hábitos o telemetría | Cero telemetría de usuario; logs locales y efímeros |
-| `SEC-09` | DHT/UPnP expone la IP o abre puertos | UPnP desactivado por defecto; DHT configurable; aviso explícito |
-| `SEC-10` | Dependencia comprometida | Versiones fijadas, auditoría de dependencias y licencias |
+1. **Minimización:** solo se recoge el dato imprescindible, y se justifica.
+2. **Local por defecto:** si el dato puede quedarse en el dispositivo, no sale.
+3. **Sin telemetría de usuario:** prohibidas las analíticas, el crash reporting
+   remoto y cualquier identificador persistente.
+4. **Superficie mínima:** cada puerto, permiso y dependencia se declara y se
+   justifica.
+5. **Fallar cerrado:** ante duda, se deniega la operación.
 
----
+## 2. Secretos
 
-## 3. Invariantes de seguridad
+- Prohibido versionar claves, tokens, certificados o keystores.
+- `.env` y equivalentes están excluidos en `.gitignore` y `.aiignore`.
+- Los secretos se inyectan en tiempo de ejecución, nunca se compilan.
+- Si un secreto se filtra: se rota y se documenta en un ADR.
 
-1. El endpoint de vídeo nunca escucha fuera de loopback.
-2. Toda sesión local usa un token efímero y no lo escribe en logs.
-3. El contenido descargado se escribe solo en el directorio de sesión.
-4. Prohibido ejecutar binarios o scripts descargados.
-5. Prohibido enviar a la red nombres de archivo, historial, progreso o identificadores del usuario.
-6. Prohibido incluir SDKs de analítica, publicidad o crash reporting remoto.
-7. Prohibido desactivar la validación TLS del catálogo.
-8. Prohibido abrir el puerto 8888 a la LAN “para probar”.
-9. Prohibido confiar en el `Content-Type` de un peer o catálogo sin validación local.
-10. Prohibido usar contenido o metadatos sin verificar su origen y sus derechos.
+## 3. Datos personales
 
----
+- Cualquier dato personal requiere justificación escrita en la spec.
+- Prohibido registrar datos personales en logs, incluso en desarrollo.
+- Los datos locales se cifran si el producto lo exige o el riesgo lo justifica.
+- Se define retención y borrado explícitos.
 
-## 4. Privacidad
+## 4. Entrada no confiable
 
-- No se recoge telemetría de usuario.
-- No se envía historial de visualización a ningún servidor.
-- Los logs de diagnóstico son locales, rotativos y sin datos personales.
-- Las fuentes de catálogo pueden ser remotas; el usuario decide cuáles añade.
-- El progreso y las preferencias se guardan localmente.
-- Cualquier futura función de sync entre dispositivos requiere una spec y una revisión de privacidad.
+- Toda entrada externa se valida antes de usarse.
+- Prohibido construir rutas de fichero con datos externos sin confinamiento.
+- Los tamaños y cantidades se limitan explícitamente.
+- Prohibido deserializar formatos arbitrarios sin esquema.
 
----
+## 5. Red y red
 
-## 5. Licencias y distribución
+- Solo se abre lo declarado en `platform_matrix.md`.
+- Los servicios locales escuchan en loopback salvo declaración expresa.
+- Toda conexión saliente se documenta con su propósito.
+- Prohibido desactivar la verificación de certificados.
 
-Antes de distribuir FLIK:
+## 6. Dependencias y licencias
 
-- Verificar la licencia de `media_kit`, MPV/FFmpeg y del runtime P2P elegido.
-- Confirmar obligaciones de atribución, código fuente y distribución dinámica/estática.
-- Revisar compatibilidad con Android TV, Windows, macOS y Linux.
-- Documentar avisos de terceros en la app y en el repositorio.
-- No asumir que una dependencia es redistribuible solo porque sea open source.
+- Toda dependencia nueva implica revisar licencia y tamaño.
+- Prohibidas las licencias incompatibles con la distribución prevista.
+- Las dependencias sin mantenimiento se marcan y se sustituyen con un ADR.
 
----
+## 7. Verificación
 
-## 6. Contenido y cumplimiento
+| Comprobación | Herramienta |
+|---|---|
+| Paquetes de analítica o proxy prohibidos | `preflight` → `DEP-FORBIDDEN` |
+| Tokens de telemetría en el código | `preflight` → `PRIVACY-REMOTE-TELEMETRY` |
+| Secretos versionados | Revisión de `.gitignore` y `.aiignore` |
+| Endpoint expuesto fuera de loopback | Perfil `streaming` de `preflight` |
 
-FLIK no aloja contenido ni opera un backend. Aun así:
+## 8. Prohibiciones
 
-- El usuario es responsable de las fuentes que añade.
-- La app no debe incluir catálogos con contenido ilícito.
-- La política de contenido y jurisdicción debe revisarse antes de publicar.
-- No se implementa DRM ni elusión de DRM.
-
----
-
-## 7. Respuesta a incidentes
-
-1. Detener la sesión y cerrar el endpoint.
-2. No borrar logs locales antes de capturar el fallo.
-3. Identificar si el problema es de peer, contenedor, catálogo o dependencia.
-4. Registrar el modo de fallo en `memory/failure_modes.md`.
-5. Añadir una prueba que reproduzca el incidente antes de corregirlo.
+- Introducir telemetría, publicidad o perfilado.
+- Registrar datos personales o contenido del usuario.
+- Publicar en Git sin instrucción explícita.
+- Añadir permisos o puertos sin declararlos.

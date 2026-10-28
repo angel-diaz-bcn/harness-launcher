@@ -1,7 +1,7 @@
 name: create-component-sdd
 version: 2.0.0
 description: >-
-  Crea el esqueleto de una spec de componente FLIK (CMP-NN) desde la plantilla canónica.
+  Crea el esqueleto de una spec de componente (CMP-NN) desde la plantilla canónica.
 cli_dependencies:
   - python
 inputs:
@@ -23,7 +23,7 @@ inputs:
     required: true
   layer:
     type: string
-    description: Capa del componente (bootstrap, backend o frontend); se infiere de --dir.
+    description: Capa del componente (bootstrap, domain o ui); se infiere de --dir.
     required: false
   force:
     type: boolean
