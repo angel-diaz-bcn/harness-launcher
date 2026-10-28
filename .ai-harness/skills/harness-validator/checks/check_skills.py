@@ -1,4 +1,4 @@
-"""Check Skills: FLIK skill registry, manifests and docs."""
+"""Check Skills: registro de skills, manifiestos y documentación."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 try:
+    from harness_config import harness_dir_of, load_config
     from models import SubCheckResult, ValidationStatus, ValidationViolation
 except ImportError:
     from .models import SubCheckResult, ValidationStatus, ValidationViolation
@@ -39,10 +40,11 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
     start = time.perf_counter()
     violations: list[ValidationViolation] = []
 
-    harness_dir = harness_root / ".ai-harness" if harness_root.name != ".ai-harness" else harness_root
+    harness_dir = harness_dir_of(harness_root)
     workspace = harness_dir.parent
     skills_dir = harness_dir / "skills"
     registry_path = skills_dir / "registry.yaml"
+    docs_root = str(load_config(harness_root)["skills"].get("docs_root", ".agents/skills"))
 
     if not skills_dir.exists():
         return SubCheckResult(
@@ -150,7 +152,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                 )
             )
 
-        doc_path = workspace / ".agents" / "skills" / name / "SKILL.md"
+        doc_path = workspace / docs_root / name / "SKILL.md"
         if not doc_path.exists():
             violations.append(
                 ValidationViolation(

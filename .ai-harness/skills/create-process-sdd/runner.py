@@ -1,4 +1,4 @@
-"""Scaffolds a FLIK process spec from the canonical template."""
+"""Scaffolds a process spec from the canonical template."""
 
 from __future__ import annotations
 
@@ -9,8 +9,13 @@ from pathlib import Path
 
 current_dir = Path(__file__).resolve().parent
 harness_dir = current_dir.parent.parent
+skills_dir = current_dir.parent
+if str(skills_dir) not in sys.path:
+    sys.path.insert(0, str(skills_dir))
+
+from harness_config import load_config
+
 template_path = harness_dir / "sdd" / "templates" / "TEMPLATE_PROCESS_SDD.md"
-ID_PATTERN = re.compile(r"^PRC-\d{2}$")
 
 
 def slugify(value: str) -> str:
@@ -20,20 +25,29 @@ def slugify(value: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create a FLIK process spec scaffold")
-    parser.add_argument("process_id", help="PRC-01")
+    config = load_config(harness_dir)
+    process_prefix = str(config["sdd"].get("process_prefix", "PRC"))
+    path_roots = tuple(
+        str(x) for x in config["scopes"].get("path_roots", []) or ["lib/"]
+    )
+    id_pattern = re.compile(rf"^{re.escape(process_prefix)}-\d{{2}}$")
+
+    parser = argparse.ArgumentParser(description="Create a process spec scaffold")
+    parser.add_argument("process_id", help=f"{process_prefix}-01")
     parser.add_argument("--name", required=True, help="Human-readable process name")
-    parser.add_argument("--target", required=True, help="Implementation path under lib/")
+    parser.add_argument(
+        "--target", required=True, help=f"Implementation path under {path_roots[0]}"
+    )
     parser.add_argument("--dir", required=True, help="Directory for story and spec")
-    parser.add_argument("--block", default="navigation", help="catalog, playback or navigation")
+    parser.add_argument("--block", default="", help="Block that owns the process")
     parser.add_argument("--force", action="store_true", help="Overwrite an existing scaffold")
     args = parser.parse_args()
 
-    if not ID_PATTERN.match(args.process_id):
-        print("Process id must match PRC-NN.", file=sys.stderr)
+    if not id_pattern.match(args.process_id):
+        print(f"Process id must match {process_prefix}-NN.", file=sys.stderr)
         sys.exit(1)
-    if not args.target.startswith("lib/"):
-        print("Target must be a path under lib/.", file=sys.stderr)
+    if path_roots and not args.target.startswith(path_roots[0]):
+        print(f"Target must be a path under {path_roots[0]}.", file=sys.stderr)
         sys.exit(1)
     if not template_path.exists():
         print(f"Template not found: {template_path}", file=sys.stderr)
@@ -50,10 +64,11 @@ def main() -> None:
         sys.exit(1)
 
     content = template_path.read_text(encoding="utf-8")
-    content = content.replace("PRC-<NN>", args.process_id)
-    content = content.replace("<Nombre del proceso>", args.name)
-    content = content.replace("<ruta/exacta/al/orquestador.dart>", args.target)
-    content = content.replace("block: <playback|catalog|navigation>", f"block: {args.block}")
+    content = re.sub(r"[A-Z]{2,5}-<NN>", args.process_id, content)
+    content = re.sub(r"<Nombre del proceso>", args.name, content)
+    content = re.sub(r"<ruta/[^>]*>", args.target, content)
+    if args.block:
+        content = re.sub(r"block:\s*<[^>]*>", f"block: {args.block}", content)
     content = content.replace("<nombre>.spec.md", spec_path.name)
 
     story = (

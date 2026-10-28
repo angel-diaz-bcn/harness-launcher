@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 try:
+    from harness_config import harness_dir_of, load_config
     from models import SubCheckResult, ValidationStatus, ValidationViolation
 except ImportError:
     from .models import (  # type: ignore[no-redef]
@@ -16,38 +17,20 @@ except ImportError:
     )
 
 
-REQUIRED_SDD_BLOCK_DIRS = [
-    "1_COMPONENTS",
-    "2_PROCESSES",
-    "templates",
-]
-
 VALID_SDD_STATES = {
     "DRAFT",
     "APPROVED",
     "SUPERSEDED",
 }
 
-SPEC_FILENAME_RE = re.compile(
-    r"^(CMP-\d{2}|PRC-\d{2})-[a-z0-9]+(?:-[a-z0-9]+)*\.spec\.md$"
-)
 
-REQUIRED_FRONTMATTER = [
-    "spec_id",
-    "spec_type",
-    "name",
-    "target",
-    "block",
-    "status",
-    "version",
-    "owner",
-    "last_reviewed",
-    "approved_at",
-    "approved_by",
-    "supersedes",
-    "superseded_by",
-    "user_story",
-]
+def _spec_filename_re(component_prefix: str, process_prefix: str) -> re.Pattern[str]:
+    """Construye el patrón de nombre de spec a partir de los prefijos configurados."""
+    prefixes = "|".join(
+        re.escape(prefix) for prefix in (component_prefix, process_prefix) if prefix
+    )
+    return re.compile(rf"^({prefixes})-\d{{2}}-[a-z0-9]+(?:-[a-z0-9]+)*\.spec\.md$")
+
 
 
 def _frontmatter_value(content: str, key: str) -> str | None:
@@ -61,11 +44,21 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
     start_time = time.perf_counter()
     violations: list[ValidationViolation] = []
 
-    harness_dir = (
-        harness_root / ".ai-harness" if harness_root.name != ".ai-harness" else harness_root
+    config = load_config(harness_root)
+    component_prefix = str(config["sdd"].get("component_prefix", "CMP"))
+    process_prefix = str(config["sdd"].get("process_prefix", "PRC"))
+    required_blocks = [str(name) for name in config["sdd"].get("blocks", [])]
+    required_frontmatter = [str(key) for key in config["sdd"].get("frontmatter", [])]
+    component_layers = {str(x) for x in config["sdd"].get("component_layers", [])}
+    map_heading = str(
+        config["sdd"].get("implementation_map_heading", "Mapa de implementación")
     )
+    spec_filename_re = _spec_filename_re(component_prefix, process_prefix)
+
+    harness_dir = harness_dir_of(harness_root)
     sdd_dir = harness_dir / "sdd"
     workspace_root = harness_dir.parent
+
 
     if not sdd_dir.exists():
         violations.append(
@@ -86,7 +79,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
         )
 
     # 1. Verify 6 Block Directories
-    for block_dir_name in REQUIRED_SDD_BLOCK_DIRS:
+    for block_dir_name in required_blocks:
         block_path = sdd_dir / block_dir_name
         if not block_path.exists() or not block_path.is_dir():
             violations.append(
@@ -141,7 +134,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                 continue
             if sdd_file.name in {"user_story.md", "README.md", "INDEX.md"}:
                 continue
-            if not SPEC_FILENAME_RE.match(sdd_file.name):
+            if not spec_filename_re.match(sdd_file.name):
                 violations.append(
                     ValidationViolation(
                         component="sdd",
@@ -149,7 +142,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                         rule_id="SDD-INVALID-SPEC-FILENAME",
                         message=(
                             "Spec filename must match "
-                            "'<CMP|PRC>-<NN>-<slug>.spec.md'."
+                            f"'<{component_prefix}|{process_prefix}>-<NN>-<slug>.spec.md'."
                         ),
                         severity="ERROR",
                     )
@@ -157,7 +150,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                 continue
 
             missing_frontmatter = [
-                key for key in REQUIRED_FRONTMATTER if _frontmatter_value(content, key) is None
+                key for key in required_frontmatter if _frontmatter_value(content, key) is None
             ]
             if missing_frontmatter:
                 violations.append(
@@ -241,7 +234,11 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                         )
                     )
 
-            expected_type = "CMP" if sdd_file.name.startswith("CMP-") else "PRC"
+            expected_type = (
+                component_prefix
+                if sdd_file.name.startswith(f"{component_prefix}-")
+                else process_prefix
+            )
             if spec_type and spec_type != expected_type:
                 violations.append(
                     ValidationViolation(
@@ -257,8 +254,8 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                 )
 
             layer = _frontmatter_value(content, "layer")
-            if expected_type == "CMP":
-                valid_layers = {"bootstrap", "backend", "frontend"}
+            if expected_type == component_prefix:
+                valid_layers = component_layers
                 if layer is None:
                     violations.append(
                         ValidationViolation(
@@ -341,7 +338,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                         )
                     )
 
-            map_section = content.split("Mapa de implementación", 1)[-1]
+            map_section = content.split(map_heading, 1)[-1]
             if not re.search(r"\b(FR|ST)-\d{2}\b", map_section):
                 violations.append(
                     ValidationViolation(
@@ -380,7 +377,7 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                         )
                     )
 
-            if "Mapa de implementación" not in content:
+            if map_heading not in content:
                 violations.append(
                     ValidationViolation(
                         component="sdd",

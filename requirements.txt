@@ -1,0 +1,6 @@
+# Dependencias del arnés (tooling de validación, no del producto).
+# Python mínimo: 3.11 (los modelos usan enum.StrEnum).
+# Instalación:  python -m pip install -r requirements.txt
+
+pydantic>=2.5,<3
+PyYAML>=6.0

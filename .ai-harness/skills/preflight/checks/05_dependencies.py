@@ -15,21 +15,9 @@ if str(checks_dir) not in sys.path:
     sys.path.insert(0, str(checks_dir))
 
 from common import find_project_root, read_text
+from harness_config import load_config
 from models import CheckResult, CheckStatus, CheckViolation
 
-FORBIDDEN_PACKAGES = {
-    "firebase_core",
-    "firebase_analytics",
-    "firebase_crashlytics",
-    "sentry_flutter",
-    "amplitude_flutter",
-    "mixpanel_flutter",
-    "google_analytics",
-    "facebook_app_events",
-    "appsflyer_sdk",
-    "http_proxy",
-    "flutter_webview_proxy",
-}
 SECTIONS = ("dependencies:", "dev_dependencies:")
 
 
@@ -72,12 +60,17 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
 
     pubspec = root / "pubspec.yaml"
     packages = _declared_packages(read_text(pubspec))
-    for package in sorted(packages & FORBIDDEN_PACKAGES):
+    configured = load_config(root)["architecture"].get("forbidden_packages", []) or []
+    forbidden_packages = {str(name) for name in configured}
+    for package in sorted(packages & forbidden_packages):
         violations.append(
             CheckViolation(
                 file_path=pubspec,
                 rule_id="DEP-FORBIDDEN",
-                message=f"Forbidden dependency '{package}': backend, analytics or telemetry is not allowed.",
+                message=(
+                    f"Forbidden dependency '{package}': declared in "
+                    "architecture.forbidden_packages (harness.config.yaml)."
+                ),
             )
         )
 

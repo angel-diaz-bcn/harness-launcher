@@ -50,7 +50,7 @@ class HarnessValidationReport(BaseModel):
         border_sec = "├" + "─" * (width - 2) + "┤"
         border_bottom = "└" + "─" * (width - 2) + "┘"
 
-        title_text = "FLIK ── HARNESS INTEGRITY REPORT"
+        title_text = "HARNESS INTEGRITY REPORT"
         title_line = f"│  \033[1m{title_text:<{width - 6}}\033[0m  │"
 
         lines: list[str] = [border_top, title_line, border_sec]

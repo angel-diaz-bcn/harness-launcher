@@ -1,0 +1,181 @@
+# =============================================================================
+# Configuración del arnés — única fuente de verdad estructural
+# -----------------------------------------------------------------------------
+# Ningún validador hardcodea nombres de contexto, scopes, prefijos de spec,
+# modos de fallo ni listas de términos prohibidos: todo se lee de aquí.
+# Si este archivo falta, los validadores fallan con un error explícito.
+# =============================================================================
+
+version: 1
+
+project:
+  name: "<PROYECTO>"
+  slug: "<slug>"
+  stack: generic            # generic | flutter | dart
+
+# -----------------------------------------------------------------------------
+# Contexto normativo: cada archivo debe existir y tener contenido sustantivo
+# -----------------------------------------------------------------------------
+context:
+  required:
+    - system_identity.md
+    - harness_governance.md
+    - project_overview.md
+    - architecture_rules.md
+    - project_structure.md
+    - coding_standards.md
+    - testing_guidelines.md
+    - security_privacy.md
+    - platform_matrix.md
+    - glossary.md
+    - sdd_framework.md
+    - ui-design-system.md
+  # AGENTS.md debe referenciar estos archivos para no duplicar sus reglas
+  agents_must_reference:
+    - system_identity.md
+    - harness_governance.md
+
+# -----------------------------------------------------------------------------
+# Scopes: límites de escritura. Todo scope debe declarar al menos una ruta
+# autorizada de `path_roots` y ninguna de `forbidden_paths`.
+# -----------------------------------------------------------------------------
+scopes:
+  required:
+    - block_app_core.md
+    - block_catalog_service.md
+    - block_media_player.md
+    - block_p2p_engine.md
+    - block_ui_navigation_engine.md
+  path_roots:
+    - "lib/"
+  forbidden_paths:
+    - "packages/"
+    - "apps/flik_app"
+
+# -----------------------------------------------------------------------------
+# SDD: convención de identificadores y front matter obligatorio
+# -----------------------------------------------------------------------------
+sdd:
+  component_prefix: CMP
+  process_prefix: PRC
+  component_layers:
+    - bootstrap
+    - backend
+    - frontend
+  blocks:
+    - 1_COMPONENTS
+    - 2_PROCESSES
+    - templates
+  implementation_map_heading: "Mapa de implementación"
+  frontmatter:
+    - spec_id
+    - spec_type
+    - name
+    - target
+    - block
+    - status
+    - version
+    - owner
+    - last_reviewed
+    - approved_at
+    - approved_by
+    - supersedes
+    - superseded_by
+    - user_story
+
+# -----------------------------------------------------------------------------
+# Memoria: prefijo de los modos de fallo y mínimo exigido
+# -----------------------------------------------------------------------------
+memory:
+  failure_prefix: "FM-FLIK"
+  min_failure_modes: 5
+
+# -----------------------------------------------------------------------------
+# Skills: dónde vive la documentación de uso de cada skill
+# -----------------------------------------------------------------------------
+skills:
+  docs_root: ".agents/skills"
+
+# -----------------------------------------------------------------------------
+# Arquitectura: features y fronteras verificadas por preflight
+# -----------------------------------------------------------------------------
+architecture:
+  features:
+    - catalog
+    - player
+    - p2p_engine
+    - tv_experience
+  forbidden_by_feature:
+    catalog:
+      - media_kit
+      - player
+      - p2p_engine
+      - tv_experience
+    player:
+      - catalog
+      - p2p_engine
+      - tv_experience
+    p2p_engine:
+      - catalog
+      - player
+      - tv_experience
+  # Paquetes permitidos solo dentro de una ruta concreta
+  exclusive_import_paths:
+    media_kit: "lib/features/player/data/media_kit/"
+  # Features que no pueden depender del framework de UI
+  framework_import_prefix: "package:flutter/"
+  framework_free_features:
+    - p2p_engine
+  # Persistencia local: solo la feature propietaria puede importarla
+  persistence_feature: catalog
+  persistence_imports:
+    - package:hive
+    - package:sqflite
+    - package:drift
+    - package:sqlite3
+  forbidden_packages:
+    - firebase_core
+    - firebase_analytics
+    - firebase_crashlytics
+    - sentry_flutter
+    - amplitude_flutter
+    - mixpanel_flutter
+    - google_analytics
+    - facebook_app_events
+    - appsflyer_sdk
+    - http_proxy
+    - flutter_webview_proxy
+
+# -----------------------------------------------------------------------------
+# UI: feature que concentra la navegación por foco
+# -----------------------------------------------------------------------------
+ui:
+  token_feature: "tv_experience"
+
+# -----------------------------------------------------------------------------
+# Invariantes: `profile` decide qué checks específicos de dominio se cargan.
+#   none      → solo checks estructurales
+#   streaming → añade checks de endpoint local, proxying y telemetría
+# -----------------------------------------------------------------------------
+invariants:
+  profile: streaming
+  streaming:
+    endpoint:
+      host: "127.0.0.1"
+      port: 8888
+      path: "/stream"
+    producer_feature: "p2p_engine"
+    consumer_feature: "player"
+    producer_forbidden_imports:
+      - media_kit
+    forbidden_tokens:
+      "0.0.0.0": SEC-NON-LOOPBACK-BIND
+      "apps/server_api": ARCH-BACKEND-LEAK
+      "fastapi": ARCH-BACKEND-LEAK
+      "uvicorn": ARCH-BACKEND-LEAK
+      "transcod": P2P-TRANSCODING
+      "sentry_flutter": PRIVACY-REMOTE-TELEMETRY
+      "firebase": PRIVACY-REMOTE-TELEMETRY
+      "google_analytics": PRIVACY-REMOTE-TELEMETRY
+      "mixpanel": PRIVACY-REMOTE-TELEMETRY
+      "amplitude": PRIVACY-REMOTE-TELEMETRY

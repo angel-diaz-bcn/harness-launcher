@@ -17,6 +17,14 @@ skills_git_publish_dir = Path(__file__).resolve().parent
 if str(skills_git_publish_dir) not in sys.path:
     sys.path.insert(0, str(skills_git_publish_dir))
 
+skills_dir = Path(__file__).resolve().parent.parent
+if str(skills_dir) not in sys.path:
+    sys.path.insert(0, str(skills_dir))
+
+from harness_config import require_dependencies
+
+require_dependencies()
+
 from models import GitAction, GitPublishConfig, GitPublishResult
 
 

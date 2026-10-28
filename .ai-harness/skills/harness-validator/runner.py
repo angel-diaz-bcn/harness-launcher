@@ -15,6 +15,15 @@ if str(current_dir) not in sys.path:
 harness_root = current_dir.parent.parent.parent
 if str(harness_root) not in sys.path:
     sys.path.insert(0, str(harness_root))
+skills_dir = current_dir.parent
+if str(skills_dir) not in sys.path:
+    sys.path.insert(0, str(skills_dir))
+
+from harness_config import require_dependencies
+
+require_dependencies()
+
+
 
 from models import (
     HarnessValidationReport,
@@ -67,7 +76,7 @@ def main() -> None:
     args = parser.parse_args()
     target_root = Path(args.scope).resolve()
 
-    # Load the FLIK harness checks dynamically
+    # Carga dinámica de los checks del arnés
     check_context = _load_check_module("check_context.py")
     check_memory = _load_check_module("check_memory.py")
     check_sdd = _load_check_module("check_sdd.py")

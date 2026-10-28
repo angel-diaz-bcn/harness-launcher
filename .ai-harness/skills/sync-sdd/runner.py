@@ -1,4 +1,4 @@
-"""FLIK sync-sdd: derives implementation state from specs and targets."""
+"""sync-sdd: deriva el estado de implementación de specs y targets."""
 
 from __future__ import annotations
 
@@ -15,6 +15,15 @@ harness_dir = current_dir.parent.parent
 workspace_root = harness_dir.parent
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
+
+skills_dir = current_dir.parent
+if str(skills_dir) not in sys.path:
+    sys.path.insert(0, str(skills_dir))
+
+from harness_config import require_dependencies
+
+require_dependencies()
+
 
 from models import SddSyncItem, SddSyncReport
 
@@ -59,7 +68,7 @@ def _save_state(state: dict) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="FLIK SDD sync")
+    parser = argparse.ArgumentParser(description="SDD sync")
     parser.add_argument("spec", nargs="?", default="all", help="Spec id, path, or 'all'")
     parser.add_argument("--json", action="store_true", help="Emit JSON report")
     parser.add_argument(
@@ -171,7 +180,7 @@ def main() -> None:
     if args.json:
         print(report.model_dump_json(indent=2))
     else:
-        print("FLIK SDD SYNC")
+        print("SDD SYNC")
         print("=" * 72)
         for item in items:
             print(f"[{item.sync_state}] {item.spec_id} -> {item.target or '(sin target)'}")

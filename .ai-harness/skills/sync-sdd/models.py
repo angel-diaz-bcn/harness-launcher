@@ -1,4 +1,4 @@
-"""Data models for FLIK sync-sdd."""
+"""Data models for sync-sdd."""
 
 from pydantic import BaseModel, ConfigDict, Field
 

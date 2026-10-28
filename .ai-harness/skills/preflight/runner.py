@@ -1,5 +1,5 @@
 """
-FLIK Preflight Runner.
+Preflight Runner.
 
 Validates Flutter/Dart code, feature boundaries, contracts, P2P invariants,
 design tokens and dependencies. It never validates Python product code.
@@ -18,11 +18,31 @@ current_dir = Path(__file__).resolve().parent
 if str(current_dir) not in sys.path:
     sys.path.insert(0, str(current_dir))
 
+skills_dir = current_dir.parent
+if str(skills_dir) not in sys.path:
+    sys.path.insert(0, str(skills_dir))
+
+from harness_config import invariant_profile, load_config, require_dependencies
+
+require_dependencies()
+
 from models import CheckResult, CheckStatus, PreflightSummary
 
+# (nombre, archivo, perfil que lo activa; None = siempre)
+CHECK_CATALOG: list[tuple[str, str, str | None]] = [
+    ("00_code_quality", "00_code_quality.py", None),
+    ("01_architecture", "01_architecture.py", None),
+    ("02_contracts", "02_contracts.py", None),
+    ("03_streaming_invariants", "streaming_invariants.py", "streaming"),
+    ("04_ui_tokens", "04_ui_tokens.py", None),
+    ("05_dependencies", "05_dependencies.py", None),
+]
 
-def _load_check_module(filename: str) -> Any:
-    file_path = current_dir / "checks" / filename
+
+
+def _load_check_module(filename: str, profile_check: bool = False) -> Any:
+    checks_dir = current_dir / "checks"
+    file_path = (checks_dir / "profiles" / filename) if profile_check else (checks_dir / filename)
     spec = importlib.util.spec_from_file_location(file_path.stem, file_path)
     if spec and spec.loader:
         module = importlib.util.module_from_spec(spec)
@@ -70,7 +90,7 @@ def _save_failure(project_root: Path, results: list[CheckResult]) -> None:
 
 
 def _render_console(summary: PreflightSummary) -> str:
-    lines = ["FLIK PREFLIGHT", "=" * 72]
+    lines = ["PREFLIGHT", "=" * 72]
     for result in summary.results:
         lines.append(f"[{result.status.value}] {result.check_name} ({result.execution_time_ms:.1f} ms)")
         for violation in result.violations:
@@ -95,7 +115,7 @@ def main() -> None:
         except Exception:
             pass
 
-    parser = argparse.ArgumentParser(description="FLIK Flutter preflight")
+    parser = argparse.ArgumentParser(description="Preflight: código, arquitectura y diseño")
     parser.add_argument("target", nargs="?", default=".", help="File or directory to validate")
     parser.add_argument("--scope", default=None, help="Alias for target")
     parser.add_argument("--strict", action="store_true", help="Treat warnings as failures")
@@ -108,18 +128,14 @@ def main() -> None:
         sys.exit(1)
 
     project_root = _find_project_root(target) or target
-    checks = [
-        ("00_code_quality", "00_code_quality.py"),
-        ("01_architecture", "01_architecture.py"),
-        ("02_contracts", "02_contracts.py"),
-        ("03_p2p_invariants", "03_p2p_invariants.py"),
-        ("04_ui_tokens", "04_ui_tokens.py"),
-        ("05_dependencies", "05_dependencies.py"),
-    ]
+    config = load_config(project_root)
+    profile = invariant_profile(config)
 
     results: list[CheckResult] = []
-    for _name, filename in checks:
-        module = _load_check_module(filename)
+    for _name, filename, required_profile in CHECK_CATALOG:
+        if required_profile is not None and required_profile != profile:
+            continue
+        module = _load_check_module(filename, profile_check=required_profile is not None)
         results.append(module.run(target, strict=args.strict))
 
     has_failure = any(r.status == CheckStatus.FAILED for r in results)

@@ -1,4 +1,4 @@
-"""FLIK launch-app: starts the Flutter app on a selected device."""
+"""launch-app: arranca la app Flutter en el dispositivo indicado."""
 
 from __future__ import annotations
 
@@ -25,9 +25,9 @@ def _default_device() -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Launch FLIK with Flutter")
+    parser = argparse.ArgumentParser(description="Launch the app with Flutter")
     parser.add_argument("--device", default=None, help="Flutter device id (windows, macos, linux, android, ...)")
-    parser.add_argument("--emulator", default=None, help="Emulator ID to launch (e.g. FLIK_TV, FLIK_PHONE_30)")
+    parser.add_argument("--emulator", default=None, help="Emulator ID to launch (e.g. TV_EMULATOR)")
     parser.add_argument("--list", action="store_true", help="List available Flutter devices and exit")
     parser.add_argument("--list-emulators", action="store_true", help="List available Flutter emulators and exit")
     args = parser.parse_args()
@@ -63,7 +63,7 @@ def main() -> None:
             time.sleep(2)
 
     device = args.device or _default_device()
-    print(f"[launch-app] Starting FLIK on device '{device}'...")
+    print(f"[launch-app] Starting app on device '{device}'...")
     result = subprocess.run(["flutter", "run", "-d", device], cwd=str(root), shell=is_win, check=False)
     sys.exit(result.returncode)
 

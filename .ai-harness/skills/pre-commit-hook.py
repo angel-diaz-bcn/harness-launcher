@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Git Pre-Commit Hook Guard for FLIK.
+Git Pre-Commit Hook Guard.
 Executes Preflight and Harness Integrity checks.
 Prevents git commit if validation fails.
 """
@@ -17,7 +17,7 @@ if sys.platform == "win32":
 
 
 def main() -> int:
-    print("\n🔍 FLIK Git Pre-Commit Guard :: Validating codebase...")
+    print("\n🔍 Git Pre-Commit Guard :: Validating codebase...")
 
     # 1. Run Harness Integrity Check
     val_res = subprocess.run(

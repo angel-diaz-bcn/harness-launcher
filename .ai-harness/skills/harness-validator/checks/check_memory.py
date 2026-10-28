@@ -1,4 +1,4 @@
-"""Check Memory: FLIK failure modes and decisions."""
+"""Check Memory: modos de fallo y decisiones."""
 
 from __future__ import annotations
 
@@ -7,18 +7,23 @@ import time
 from pathlib import Path
 
 try:
+    from harness_config import harness_dir_of, load_config
     from models import SubCheckResult, ValidationStatus, ValidationViolation
 except ImportError:
     from .models import SubCheckResult, ValidationStatus, ValidationViolation
 
-LEGACY_TERMS = ["Kronos", "Polars", "Parquet", "CCXT", "TradingView", "FastAPI", "Vite"]
 
 
 def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheckResult:
     start = time.perf_counter()
     violations: list[ValidationViolation] = []
 
-    harness_dir = harness_root / ".ai-harness" if harness_root.name != ".ai-harness" else harness_root
+    config = load_config(harness_root)
+    failure_prefix = str(config["memory"].get("failure_prefix", "FM"))
+    min_failure_modes = int(config["memory"].get("min_failure_modes", 5))
+    legacy_terms = [str(term) for term in config.get("legacy_terms", []) or []]
+
+    harness_dir = harness_dir_of(harness_root)
     memory_dir = harness_dir / "memory"
     failure_modes = memory_dir / "failure_modes.md"
     decisions = memory_dir / "decisions"
@@ -46,18 +51,21 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                     severity="ERROR",
                 )
             )
-        mode_count = len(re.findall(r"FM-FLIK-\d{3}", content))
-        if mode_count < 5:
+        mode_count = len(re.findall(rf"{re.escape(failure_prefix)}-\d{{3}}", content))
+        if mode_count < min_failure_modes:
             violations.append(
                 ValidationViolation(
                     component="memory",
                     file_path=failure_modes,
                     rule_id="MEM-INSUFFICIENT-FAILURE-MODES",
-                    message=f"Expected at least 5 FM-FLIK-* entries, found {mode_count}.",
+                    message=(
+                        f"Expected at least {min_failure_modes} '{failure_prefix}-*' "
+                        f"entries, found {mode_count}."
+                    ),
                     severity="ERROR",
                 )
             )
-        found = [term for term in LEGACY_TERMS if term.lower() in content.lower()]
+        found = [term for term in legacy_terms if term.lower() in content.lower()]
         if found:
             violations.append(
                 ValidationViolation(

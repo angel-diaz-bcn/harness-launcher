@@ -1,4 +1,4 @@
-"""Shared helpers for FLIK preflight checks."""
+"""Shared helpers for preflight checks."""
 
 from __future__ import annotations
 
@@ -17,9 +17,9 @@ def find_project_root(scope: Path) -> Path | None:
 def pubspec_name(root: Path) -> str:
     pubspec = root / "pubspec.yaml"
     if not pubspec.exists():
-        return "flik"
+        return "project"
     match = re.search(r"^name:\s*([A-Za-z0-9_]+)\s*$", pubspec.read_text(encoding="utf-8"), re.M)
-    return match.group(1) if match else "flik"
+    return match.group(1) if match else "project"
 
 
 def read_text(path: Path) -> str:

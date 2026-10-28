@@ -1,4 +1,4 @@
-"""Scaffolds a FLIK component spec from the canonical template."""
+"""Scaffolds a component spec from the canonical template."""
 
 from __future__ import annotations
 
@@ -9,13 +9,23 @@ from pathlib import Path
 
 current_dir = Path(__file__).resolve().parent
 harness_dir = current_dir.parent.parent
+skills_dir = current_dir.parent
+if str(skills_dir) not in sys.path:
+    sys.path.insert(0, str(skills_dir))
+
+from harness_config import load_config
+
 template_path = harness_dir / "sdd" / "templates" / "TEMPLATE_COMPONENT_SDD.md"
-ID_PATTERN = re.compile(r"^CMP-\d{2}$")
 
 
-def infer_layer(path_value: str) -> str | None:
+def infer_layer(path_value: str, layers: tuple[str, ...] = ()) -> str | None:
+    if not layers:
+        layers = tuple(
+            str(x)
+            for x in load_config(harness_dir)["sdd"].get("component_layers", []) or []
+        )
     normalized = "/" + path_value.replace("\\", "/").strip("/")
-    for layer in ("bootstrap", "backend", "frontend"):
+    for layer in layers:
         if f"/1_COMPONENTS/{layer}/" in normalized:
             return layer
     return None
@@ -28,38 +38,53 @@ def slugify(value: str) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Create a FLIK component spec scaffold")
-    parser.add_argument("component_id", help="CMP-01")
+    config = load_config(harness_dir)
+    sdd = config["sdd"]
+    component_prefix = str(sdd.get("component_prefix", "CMP"))
+    layers = tuple(str(x) for x in sdd.get("component_layers", []) or [])
+    path_roots = tuple(
+        str(x) for x in config["scopes"].get("path_roots", []) or ["lib/"]
+    )
+    id_pattern = re.compile(rf"^{re.escape(component_prefix)}-\d{{2}}$")
+
+    parser = argparse.ArgumentParser(description="Create a component spec scaffold")
+    parser.add_argument("component_id", help=f"{component_prefix}-01")
     parser.add_argument("--name", required=True, help="Human-readable component name")
-    parser.add_argument("--target", required=True, help="Implementation path under lib/")
+    parser.add_argument(
+        "--target", required=True, help=f"Implementation path under {path_roots[0]}"
+    )
     parser.add_argument("--dir", required=True, help="Directory for story and spec")
     parser.add_argument(
         "--layer",
-        choices=("bootstrap", "backend", "frontend"),
+        choices=layers or None,
         help="Component layer; inferred from --dir when omitted",
     )
     parser.add_argument("--force", action="store_true", help="Overwrite an existing scaffold")
     args = parser.parse_args()
 
-    if not ID_PATTERN.match(args.component_id):
-        print("Component id must match CMP-NN.", file=sys.stderr)
+    if not id_pattern.match(args.component_id):
+        print(
+            f"Component id must match {component_prefix}-NN.",
+            file=sys.stderr,
+        )
         sys.exit(1)
-    if not args.target.startswith("lib/"):
-        print("Target must be a path under lib/.", file=sys.stderr)
+    if path_roots and not args.target.startswith(path_roots[0]):
+        print(f"Target must be a path under {path_roots[0]}.", file=sys.stderr)
         sys.exit(1)
     if not template_path.exists():
         print(f"Template not found: {template_path}", file=sys.stderr)
         sys.exit(1)
 
-    layer = args.layer or infer_layer(args.dir)
+    layer = args.layer or infer_layer(args.dir, layers)
     if layer is None:
         print(
-            "Indicate --layer bootstrap|backend|frontend or use a "
-            "1_COMPONENTS/<layer>/ directory.",
+            "Indicate --layer "
+            + "|".join(layers)
+            + " or use a 1_COMPONENTS/<layer>/ directory.",
             file=sys.stderr,
         )
         sys.exit(1)
-    folder_layer = infer_layer(args.dir)
+    folder_layer = infer_layer(args.dir, layers)
     if folder_layer is not None and folder_layer != layer:
         print(
             f"Layer '{layer}' does not match --dir layer '{folder_layer}'.",
@@ -81,11 +106,11 @@ def main() -> None:
         sys.exit(1)
 
     content = template_path.read_text(encoding="utf-8")
-    content = content.replace("CMP-<NN>", args.component_id)
-    content = content.replace("layer: <bootstrap|backend|frontend>", f"layer: {layer}")
-    content = content.replace("<Nombre del componente>", args.name)
-    content = content.replace("<ruta/exacta/al/archivo.dart>", args.target)
-    content = content.replace("block: <feature>", f"block: {feature}")
+    content = re.sub(r"[A-Z]{2,5}-<NN>", args.component_id, content)
+    content = re.sub(r"layer:\s*<[^>]*>", f"layer: {layer}", content)
+    content = re.sub(r"<Nombre del componente>", args.name, content)
+    content = re.sub(r"<ruta/[^>]*>", args.target, content)
+    content = re.sub(r"block:\s*<[^>]*>", f"block: {feature}", content)
     content = content.replace("<nombre>.spec.md", spec_path.name)
 
     story = (
