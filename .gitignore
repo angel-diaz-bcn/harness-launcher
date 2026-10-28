@@ -1,0 +1,163 @@
+# ---------------------------------------------------------------------------
+# FLIK — archivos que no deben subirse a GitLab
+# ---------------------------------------------------------------------------
+
+# --- Secretos y credenciales -------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+key.properties
+secrets.json
+secrets.yaml
+secrets.yml
+google-services.json
+GoogleService-Info.plist
+.netrc
+.npmrc
+
+# --- Sistema operativo -------------------------------------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*.tmp
+*.temp
+*.bak
+*.orig
+*.rej
+
+# --- Editores e IDE ----------------------------------------------------------
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.history/
+.atom/
+.swiftpm/
+
+# --- Python / arnés ----------------------------------------------------------
+*.pyc
+*.pyo
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# --- Flutter / Dart ----------------------------------------------------------
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+/build/
+/coverage/
+app.*.symbols
+app.*.map.json
+.widget_preview/
+**/doc/api/
+
+# --- Android -----------------------------------------------------------------
+/android/.gradle/
+/android/local.properties
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+/android/captures/
+/android/.cxx/
+/android/key.properties
+**/*.jks
+**/*.keystore
+GeneratedPluginRegistrant.java
+
+# --- macOS / iOS -------------------------------------------------------------
+**/Flutter/ephemeral/
+**/Pods/
+**/.symlinks/
+**/xcuserdata/
+**/dgph
+**/ios/Flutter/.last_build_id
+
+# --- Linux / Windows ---------------------------------------------------------
+/linux/flutter/ephemeral/
+/windows/flutter/ephemeral/
+x64/
+x86/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.[Cc]ache
+!*.[Cc]ache/
+
+# --- Builds y binarios -------------------------------------------------------
+*.apk
+*.aab
+*.ipa
+*.app
+*.exe
+*.dll
+*.so
+*.dylib
+*.msi
+*.dmg
+*.deb
+*.rpm
+*.AppImage
+*.snap
+*.class
+
+# --- Medios y paquetes grandes ----------------------------------------------
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.m4v
+*.mp3
+*.flac
+*.wav
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.iso
+*.torrent
+
+# --- Logs y volcados ---------------------------------------------------------
+*.log
+*.trace
+*.stackdump
+hs_err_pid*
+replay_pid*
+
+# --- Estado local generado por el arnés -------------------------------------
+.ai-harness/memory/sync-state.json
+.ai-harness/memory/ephemeral_feedback/*
+!.ai-harness/memory/ephemeral_feedback/.gitkeep
+.tools/
+
+# --- Varios ------------------------------------------------------------------
+migrate_working_dir/
+
+
+# Build de módulos Android
+/android/build/
+
+# Shim P2P precompilado por ABI (ADR-0003)
+!/android/app/src/main/jniLibs/**/*.so
+
+# SPECTRA Harness Cache
+.spectra/

@@ -1,0 +1,32 @@
+name: create-process-sdd
+version: 2.0.0
+description: >-
+  Crea el esqueleto de una spec de proceso FLIK (PRC) desde la plantilla canónica.
+cli_dependencies:
+  - python
+inputs:
+  process_id:
+    type: string
+    description: ID del proceso (ej. PRC-01).
+    required: true
+  name:
+    type: string
+    description: Nombre legible del proceso.
+    required: true
+  target:
+    type: string
+    description: Ruta de implementación bajo lib/.
+    required: true
+  dir:
+    type: string
+    description: Carpeta donde crear user_story.md y la spec.
+    required: true
+  block:
+    type: string
+    description: catalog, playback o navigation.
+    required: false
+outputs:
+  exit_code:
+    type: integer
+    description: 0 si se creó el scaffold.
+command: python .ai-harness/skills/create-process-sdd/runner.py

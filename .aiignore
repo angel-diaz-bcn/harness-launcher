@@ -1,0 +1,149 @@
+# ---------------------------------------------------------------------------
+# FLIK — exclusión de contexto para asistentes de IA
+# No sustituye a .gitignore; evita leer binarios, secretos y artefactos.
+# ---------------------------------------------------------------------------
+
+# Secretos y configuración local
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+key.properties
+secrets.json
+secrets.yaml
+secrets.yml
+google-services.json
+GoogleService-Info.plist
+.netrc
+.npmrc
+local.properties
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.history/
+.atom/
+.swiftpm/
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+*.rej
+
+# Python / arnés
+*.pyc
+*.pyo
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Flutter / Dart generado
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+.flutter-plugins
+.flutter-plugins-dependencies
+/build/
+/coverage/
+app.*.symbols
+app.*.map.json
+.widget_preview/
+**/doc/api/
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+pubspec.lock
+.metadata
+
+# Android
+/android/.gradle/
+/android/app/debug/
+/android/app/profile/
+/android/app/release/
+/android/captures/
+/android/.cxx/
+GeneratedPluginRegistrant.java
+
+# macOS / iOS
+**/Flutter/ephemeral/
+**/Pods/
+**/.symlinks/
+**/xcuserdata/
+**/dgph
+
+# Linux / Windows
+/linux/flutter/ephemeral/
+/windows/flutter/ephemeral/
+x64/
+x86/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.[Cc]ache
+!*.[Cc]ache/
+
+# Builds y binarios
+*.apk
+*.aab
+*.ipa
+*.app
+*.exe
+*.dll
+*.so
+*.dylib
+*.msi
+*.dmg
+*.deb
+*.rpm
+*.AppImage
+*.snap
+*.class
+
+# Medios y paquetes grandes
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.m4v
+*.mp3
+*.flac
+*.wav
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.iso
+*.torrent
+
+# Logs y volcados
+*.log
+*.trace
+*.stackdump
+hs_err_pid*
+replay_pid*
+
+# Estado local generado por el arnés
+.ai-harness/memory/sync-state.json
+.ai-harness/memory/ephemeral_feedback/*
+!.ai-harness/memory/ephemeral_feedback/.gitkeep
+.tools/

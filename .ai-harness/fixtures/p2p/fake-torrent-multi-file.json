@@ -1,0 +1,25 @@
+{
+  "infoHash": "89abcdef0123456789abcdef0123456789abcdef",
+  "name": "flik-multi-file",
+  "totalLength": 12288,
+  "files": [
+    {
+      "index": 0,
+      "path": "feature.mkv",
+      "length": 8192,
+      "video": true
+    },
+    {
+      "index": 1,
+      "path": "extras/sample.mp4",
+      "length": 4096,
+      "video": true
+    },
+    {
+      "index": 2,
+      "path": "readme.txt",
+      "length": 64,
+      "video": false
+    }
+  ]
+}

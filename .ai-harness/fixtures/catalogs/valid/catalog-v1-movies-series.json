@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "catalog_id": "flik-demo",
+  "generated_at": "2026-10-23T00:00:00Z",
+  "items": [
+    {
+      "id": "blade-runner-2049",
+      "kind": "movie",
+      "title": "Blade Runner 2049",
+      "original_title": "Blade Runner 2049",
+      "synopsis": "Un blade runner descubre un secreto que podría cambiar lo que queda de la humanidad.",
+      "year": 2017,
+      "genres": ["sci-fi", "drama"],
+      "poster_uri": "https://cdn.example.com/posters/blade-runner-2049.jpg",
+      "backdrop_uri": "https://cdn.example.com/backdrops/blade-runner-2049.jpg",
+      "rating": 8.0,
+      "runtime_minutes": 164,
+      "external_ids": {
+        "tmdb": "335984",
+        "imdb": "tt1856101"
+      },
+      "cast": ["Ryan Gosling", "Harrison Ford", "Ana de Armas"],
+      "directors": ["Denis Villeneuve"],
+      "tags": ["featured", "4k"],
+      "variants": [
+        {
+          "id": "br2049-2160p",
+          "quality": "2160p",
+          "magnet_uri": "magnet:?xt=urn:btih:0123456789abcdef0123456789abcdef01234567&dn=Blade.Runner.2049.2160p&tr=udp%3A%2F%2Ftracker.example%3A6969",
+          "file_index": 0,
+          "size_bytes": 19327352832,
+          "video_codec": "hevc",
+          "audio_codecs": ["eac3", "ac3"],
+          "audio_languages": ["en", "es"],
+          "subtitle_languages": ["es", "en"],
+          "release_label": "REMUX"
+        },
+        {
+          "id": "br2049-1080p",
+          "quality": "1080p",
+          "magnet_uri": "magnet:?xt=urn:btih:89abcdef0123456789abcdef0123456789abcdef&dn=Blade.Runner.2049.1080p&tr=udp%3A%2F%2Ftracker.example%3A6969",
+          "file_index": 0,
+          "size_bytes": 8589934592,
+          "video_codec": "h264",
+          "audio_codecs": ["aac", "ac3"],
+          "audio_languages": ["en", "es"],
+          "subtitle_languages": ["es"],
+          "release_label": "WEB-DL"
+        }
+      ]
+    },
+    {
+      "id": "the-expanse",
+      "kind": "series",
+      "title": "The Expanse",
+      "original_title": "The Expanse",
+      "synopsis": "Un misterio en el sistema solar enfrenta a la Tierra, Marte y el cinturón.",
+      "year": 2015,
+      "genres": ["sci-fi", "drama"],
+      "poster_uri": "https://cdn.example.com/posters/the-expanse.jpg",
+      "backdrop_uri": "https://cdn.example.com/backdrops/the-expanse.jpg",
+      "rating": 8.5,
+      "external_ids": {
+        "tmdb": "63639",
+        "imdb": "tt3230854"
+      },
+      "cast": ["Steven Strait", "Dominique Tipper", "Shohreh Aghdashloo"],
+      "directors": ["Mark Fergus", "Hawk Ostby"],
+      "tags": ["sci-fi"],
+      "seasons": [
+        {
+          "season_number": 1,
+          "title": "Season 1",
+          "episodes": [
+            {
+              "id": "the-expanse-s01e01",
+              "episode_number": 1,
+              "title": "Dulcinea",
+              "synopsis": "Una mujer desaparece y una tripulación queda atrapada en un misterio mayor.",
+              "runtime_minutes": 45,
+              "still_uri": "https://cdn.example.com/stills/the-expanse-s01e01.jpg",
+              "variants": [
+                {
+                  "id": "the-expanse-s01e01-1080p",
+                  "quality": "1080p",
+                  "magnet_uri": "magnet:?xt=urn:btih:fedcba9876543210fedcba9876543210fedcba98&dn=The.Expanse.S01E01.1080p",
+                  "file_index": 3,
+                  "size_bytes": 4294967296,
+                  "video_codec": "h264",
+                  "audio_codecs": ["eac3"],
+                  "audio_languages": ["en", "es"],
+                  "subtitle_languages": ["es", "en"],
+                  "release_label": "WEB-DL"
+                },
+                {
+                  "id": "the-expanse-s01e01-720p",
+                  "quality": "720p",
+                  "magnet_uri": "magnet:?xt=urn:btih:abcdef0123456789abcdef0123456789abcdef01&dn=The.Expanse.S01E01.720p",
+                  "file_index": 3,
+                  "size_bytes": 2147483648,
+                  "video_codec": "h264",
+                  "audio_codecs": ["aac"],
+                  "audio_languages": ["en"],
+                  "subtitle_languages": ["es"],
+                  "release_label": "WEB-DL"
+                }
+              ]
+            },
+            {
+              "id": "the-expanse-s01e02",
+              "episode_number": 2,
+              "title": "The Big Empty",
+              "synopsis": "La tripulación intenta sobrevivir mientras las tensiones aumentan.",
+              "runtime_minutes": 43,
+              "still_uri": "https://cdn.example.com/stills/the-expanse-s01e02.jpg",
+              "variants": [
+                {
+                  "id": "the-expanse-s01e02-1080p",
+                  "quality": "1080p",
+                  "magnet_uri": "magnet:?xt=urn:btih:1234567890abcdef1234567890abcdef12345678&dn=The.Expanse.S01E02.1080p",
+                  "file_index": 4,
+                  "size_bytes": 4294967296,
+                  "video_codec": "h264",
+                  "audio_codecs": ["eac3"],
+                  "audio_languages": ["en", "es"],
+                  "subtitle_languages": ["es", "en"],
+                  "release_label": "WEB-DL"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

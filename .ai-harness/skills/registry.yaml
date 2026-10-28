@@ -1,0 +1,43 @@
+version: 1
+skills:
+  - name: harness-validator
+    status: active
+    command: python .ai-harness/skills/harness-validator/runner.py
+    doc: .agents/skills/harness-validator/SKILL.md
+    description: Valida la estructura y coherencia del arnés.
+
+  - name: preflight
+    status: active
+    command: python .ai-harness/skills/preflight/runner.py
+    doc: .agents/skills/preflight/SKILL.md
+    description: Valida código Flutter, arquitectura, tokens e invariantes P2P.
+
+  - name: sync-sdd
+    status: active
+    command: python .ai-harness/skills/sync-sdd/runner.py
+    doc: .agents/skills/sync-sdd/SKILL.md
+    description: Comprueba la sincronización entre specs .spec.md y código.
+
+  - name: create-component-sdd
+    status: active
+    command: python .ai-harness/skills/create-component-sdd/runner.py
+    doc: .agents/skills/create-component-sdd/SKILL.md
+    description: Crea el esqueleto de una spec de componente CMP-NN.
+
+  - name: create-process-sdd
+    status: active
+    command: python .ai-harness/skills/create-process-sdd/runner.py
+    doc: .agents/skills/create-process-sdd/SKILL.md
+    description: Crea el esqueleto de una spec de proceso PRC.
+
+  - name: launch-app
+    status: active
+    command: python .ai-harness/skills/launch-app/runner.py
+    doc: .agents/skills/launch-app/SKILL.md
+    description: Arranca la app Flutter en el dispositivo o plataforma indicada.
+
+  - name: git-publish
+    status: active
+    command: python .ai-harness/skills/git-publish/runner.py
+    doc: .agents/skills/git-publish/SKILL.md
+    description: Publica en Git solo bajo petición explícita y tras validar.

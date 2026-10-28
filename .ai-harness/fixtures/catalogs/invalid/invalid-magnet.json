@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "catalog_id": "invalid-magnet",
+  "generated_at": "2026-10-23T00:00:00Z",
+  "items": [
+    {
+      "id": "invalid-magnet-item",
+      "kind": "movie",
+      "title": "Invalid Magnet",
+      "variants": [
+        {
+          "id": "invalid-magnet-1080p",
+          "quality": "1080p",
+          "magnet_uri": "https://example.com/not-a-magnet.mp4"
+        }
+      ]
+    }
+  ]
+}

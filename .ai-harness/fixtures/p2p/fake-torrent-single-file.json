@@ -1,0 +1,13 @@
+{
+  "infoHash": "0123456789abcdef0123456789abcdef01234567",
+  "name": "flik-single-file",
+  "totalLength": 4096,
+  "files": [
+    {
+      "index": 0,
+      "path": "sintel.mkv",
+      "length": 4096,
+      "video": true
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+name: create-component-sdd
+version: 2.0.0
+description: >-
+  Crea el esqueleto de una spec de componente FLIK (CMP-NN) desde la plantilla canónica.
+cli_dependencies:
+  - python
+inputs:
+  component_id:
+    type: string
+    description: ID del componente (ej. CMP-10).
+    required: true
+  name:
+    type: string
+    description: Nombre legible del componente.
+    required: true
+  target:
+    type: string
+    description: Ruta de implementación bajo lib/.
+    required: true
+  dir:
+    type: string
+    description: Carpeta donde crear user_story.md y la spec.
+    required: true
+  layer:
+    type: string
+    description: Capa del componente (bootstrap, backend o frontend); se infiere de --dir.
+    required: false
+  force:
+    type: boolean
+    description: Sobrescribe un scaffold existente.
+    required: false
+outputs:
+  exit_code:
+    type: integer
+    description: 0 si se creó el scaffold.
+command: python .ai-harness/skills/create-component-sdd/runner.py
