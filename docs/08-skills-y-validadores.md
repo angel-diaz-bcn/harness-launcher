@@ -118,6 +118,7 @@ humana. Un validador debe poder fallar.
 
 | Skill | Devuelve fallo cuando |
 |---|---|
+| `bootstrap-harness` | La configuración o los archivos generados no superan harness-validator |
 | `harness-validator` | Falta estructura, contenido, front matter o registro |
 | `preflight` | Hay violaciones de código, arquitectura, tokens o dependencias |
 | `sync-sdd` | Una spec aprobada diverge de su implementación |

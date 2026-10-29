@@ -58,9 +58,10 @@ AGENTS.md ── enruta ──▶ .ai-harness/context/*  (reglas normativas)
 ## 4. Primero, segundo y tercero
 
 1. Lee `docs/00-indice.md` para elegir una ruta de lectura.
-2. Adapta `harness.config.yaml` a tu proyecto (nombre, stack, scopes).
-3. Reescribe `context/project_overview.md`: es el único documento que debe
-   describir tu producto y no una plantilla.
+2. Ejecuta `python .ai-harness/skills/bootstrap-harness/runner.py` (o invoca `/bootstrap-harness.md`) para inicializar automáticamente el arnés a partir de tu documentación o preguntas guiadas.
+3. Consulta `docs/12-bootstrap-harness.md` para ver el funcionamiento de la skill.
+
+
 
 ---
 

@@ -29,6 +29,7 @@ de implementar.
 
 | Tarea | Fuente de verdad | Herramienta |
 |---|---|---|
+| Inicialización del arnés | `.ai-harness/skills/bootstrap-harness/` | `/bootstrap-harness.md` |
 | Configuración estructural | `harness.config.yaml` | — |
 | Descubrimiento de skills | `.ai-harness/skills/registry.yaml` | `/list-skills.md` |
 | Visión de producto | `context/project_overview.md` | — |

@@ -18,6 +18,7 @@ con la salida. Separarlos evita dos problemas:
 
 | Archivo | Comando | Propósito |
 |---|---|---|
+| `bootstrap-harness.md` | `/bootstrap-harness.md` | Inicialización interactiva del arnés para un nuevo proyecto |
 | `list-skills.md` | `/list-skills.md` | Inventario real de skills, sin listas hardcodeadas |
 | `create-component-sdd.md` | `/create-component-sdd.md` | Esqueleto de spec de componente |
 | `create-process-sdd.md` | `/create-process-sdd.md` | Esqueleto de spec de proceso |

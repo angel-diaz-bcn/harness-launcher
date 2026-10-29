@@ -44,6 +44,7 @@ Todas las páginas en orden. Sirve para diseñar y mantener un arnés propio.
 | `09-workflows.md` | Comandos y automatización de entrada | `.clinerules/workflows/*` |
 | `10-ignorar.md` | `.gitignore` vs `.aiignore` | Ambos archivos |
 | `11-cierre-y-auditoria.md` | Definition of Done y mantenimiento | `harness_governance.md` |
+| `12-bootstrap-harness.md` | Inicializador interactivo y asistido del arnés | `.ai-harness/skills/bootstrap-harness/*`, `.ai-harness/input/*` |
 | `cheatsheet.md` | Resumen de una página | — |
 
 ---

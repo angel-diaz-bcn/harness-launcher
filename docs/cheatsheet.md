@@ -10,6 +10,9 @@ Una página. Comandos, rutas, reglas y a dónde va cada cosa.
 # Instalación del tooling (una vez)
 python -m pip install -r requirements.txt
 
+# Inicialización asistida del arnés (nuevo proyecto o tras fork)
+python .ai-harness/skills/bootstrap-harness/runner.py --interactive
+
 # Las tres puertas
 python .ai-harness/skills/harness-validator/runner.py
 python .ai-harness/skills/preflight/runner.py

@@ -1,5 +1,11 @@
 version: 1
 skills:
+  - name: bootstrap-harness
+    status: active
+    command: python .ai-harness/skills/bootstrap-harness/runner.py
+    doc: .agents/skills/bootstrap-harness/SKILL.md
+    description: Inicializa interactivamente todo el arnés para un nuevo proyecto a partir de documentación o preguntas guiadas.
+
   - name: harness-validator
     status: active
     command: python .ai-harness/skills/harness-validator/runner.py

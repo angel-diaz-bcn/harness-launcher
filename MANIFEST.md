@@ -26,6 +26,7 @@ proyecto nuevo, se copia **solo** la sección 1.
 | `.ai-harness/memory/*` | Sí | Modos de fallo, ADRs y feedback |
 | `.ai-harness/design-system/*` | Sí | Tokens y documentos de diseño |
 | `.ai-harness/fixtures/README.md` | Sí | Convención de datos de prueba |
+| `.ai-harness/input/` | Sí | Carpeta para depositar PRDs y documentación previa |
 | `.ai-harness/skills/**` | Sí | Validadores y runners |
 
 ---
