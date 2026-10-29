@@ -45,6 +45,23 @@ def _run_cmd(cmd: list[str], cwd: Path, check: bool = True) -> subprocess.Comple
     )
 
 
+def _print_mr_pr_link(remote: str, branch: str, root: Path) -> None:
+    res = _run_cmd(["git", "remote", "get-url", remote], cwd=root, check=False)
+    if res.returncode != 0:
+        return
+    url = res.stdout.strip()
+    clean = url[:-4] if url.endswith(".git") else url
+
+    if "gitlab.com" in clean:
+        parts = clean.split("gitlab.com", 1)[1].lstrip("/:")
+        print(f"\n\033[1;36m[GitLab] Crear o revisar Merge Request:\033[0m")
+        print(f"👉 \033[4mhttps://gitlab.com/{parts}/-/merge_requests/new?merge_request%5Bsource_branch%5D={branch}\033[0m\n")
+    elif "github.com" in clean:
+        parts = clean.split("github.com", 1)[1].lstrip("/:")
+        print(f"\n\033[1;36m[GitHub] Crear o revisar Pull Request:\033[0m")
+        print(f"👉 \033[4mhttps://github.com/{parts}/pull/new/{branch}\033[0m\n")
+
+
 def _get_current_branch(root: Path) -> str:
     res = _run_cmd(["git", "rev-parse", "--abbrev-ref", "HEAD"], cwd=root, check=False)
     if res.returncode == 0 and res.stdout.strip():
@@ -190,6 +207,8 @@ def execute_git_publish(config: GitPublishConfig, root: Path) -> GitPublishResul
 
             print(
                 f"\033[92m[Git Publish] Successfully published changes to {config.remote}/{target_branch}!\033[0m"
+            )
+            _print_mr_pr_link(config.remote, target_branch, root
             )
             return GitPublishResult(
                 success=True,

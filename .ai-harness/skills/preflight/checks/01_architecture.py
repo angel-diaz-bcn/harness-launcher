@@ -19,12 +19,12 @@ if str(checks_dir) not in sys.path:
     sys.path.insert(0, str(checks_dir))
 
 from common import (
-    dart_files,
     feature_of,
     find_project_root,
     import_paths,
-    pubspec_name,
+    project_name,
     read_text,
+    source_files,
 )
 from harness_config import load_config
 from models import CheckResult, CheckStatus, CheckViolation
@@ -72,31 +72,41 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
     persistence_feature = str(rules.get("persistence_feature", "") or "")
     persistence_imports = [str(x) for x in rules.get("persistence_imports", []) or []]
 
-    package = pubspec_name(root)
+    package = project_name(root)
 
-    for path in dart_files(root, "lib"):
+    for path in source_files(root):
         relative = path.relative_to(root).as_posix()
         feature = feature_of(path, root)
         content = read_text(path)
 
         for line, imported in import_paths(content):
-            if imported.startswith(f"package:{package}/features/"):
-                remainder = imported.split(f"package:{package}/features/", 1)[1]
-                other = remainder.split("/", 1)[0]
-                if feature and other != feature:
-                    public_barrel = f"package:{package}/features/{other}/{other}.dart"
-                    if imported != public_barrel:
-                        violations.append(
-                            CheckViolation(
-                                file_path=path,
-                                line_number=line,
-                                rule_id="ARCH-CROSS-FEATURE-IMPORT",
-                                message=(
-                                    f"Feature '{feature}' imports internals of '{other}'. "
-                                    f"Use the public barrel '{public_barrel}'."
-                                ),
-                            )
+            # Detección de import cruzado entre features (soporta Dart package:..., TS @/... o relativo)
+            if f"features/" in imported or (package and imported.startswith(f"package:{package}/features/")):
+                # Extraer nombre de la otra feature importada
+                parts = imported.split("features/")
+                if len(parts) > 1:
+                    other = parts[1].split("/")[0].split(".")[0]
+                    if feature and other and other != feature and other in features:
+                        # Si no importa el index/barrel público de la feature
+                        is_barrel = (
+                            imported.endswith(f"/{other}.dart")
+                            or imported.endswith(f"/{other}")
+                            or imported.endswith(f"/{other}/index")
+                            or imported.endswith(f"/{other}/index.ts")
+                            or imported.endswith(f"/{other}/index.js")
                         )
+                        if not is_barrel:
+                            violations.append(
+                                CheckViolation(
+                                    file_path=path,
+                                    line_number=line,
+                                    rule_id="ARCH-CROSS-FEATURE-IMPORT",
+                                    message=(
+                                        f"Feature '{feature}' imports internals of '{other}'. "
+                                        f"Use the public barrel or index of '{other}'."
+                                    ),
+                                )
+                            )
 
             if (
                 framework_prefix
@@ -142,7 +152,7 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
                         )
                     )
 
-        if relative.startswith("lib/core/"):
+        if relative.startswith(("lib/core/", "src/core/", "core/")):
             for line, imported in import_paths(content):
                 if "/features/" in imported:
                     violations.append(
@@ -150,7 +160,7 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
                             file_path=path,
                             line_number=line,
                             rule_id="ARCH-CORE-IMPORTS-FEATURE",
-                            message="lib/core cannot import lib/features.",
+                            message="core module cannot import features.",
                         )
                     )
 
@@ -163,7 +173,7 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
                             rule_id="ARCH-PERSISTENCE-LEAK",
                             message=(
                                 "Local persistence belongs to "
-                                f"lib/features/{persistence_feature or '<owner>'}."
+                                f"feature '{persistence_feature or '<owner>'}."
                             ),
                         )
                     )
@@ -187,4 +197,3 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
         violations=violations,
         execution_time_ms=(time.perf_counter() - start) * 1000.0,
     )
-

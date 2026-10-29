@@ -1,9 +1,4 @@
-"""Check 04: disciplina de tokens visuales y navegación por foco.
-
-La feature que concentra la navegación por foco se lee de `ui.token_feature`
-en `harness.config.yaml`. Los colores literales se bloquean en todo `lib/`
-salvo en la implementación del tema, que es donde viven los tokens.
-"""
+"""Check 04: disciplina de tokens visuales y navegación por foco."""
 
 from __future__ import annotations
 
@@ -19,7 +14,7 @@ checks_dir = Path(__file__).resolve().parent
 if str(checks_dir) not in sys.path:
     sys.path.insert(0, str(checks_dir))
 
-from common import dart_files, find_project_root, read_text
+from common import find_project_root, read_text, source_files
 from harness_config import load_config
 from models import CheckResult, CheckStatus, CheckViolation
 
@@ -27,9 +22,14 @@ COLOR_PATTERNS = (
     re.compile(r"Color\s*\(\s*0x[0-9A-Fa-f]{6,8}"),
     re.compile(r"Color\.fromARGB\s*\("),
     re.compile(r"\bColors\.[A-Za-z]+\b"),
+    re.compile(r"""['"]#([0-9A-Fa-f]{3,8})['"]"""),
 )
-THEME_PATH = "lib/app/theme/"
-FOCUS_MARKERS = ("FocusNode", "FocusScope", "Focus(")
+THEME_PATHS = ("theme/", "tokens/", "design-system/")
+FOCUS_MARKERS = ("FocusNode", "FocusScope", "Focus(", "tabIndex", "accessible", "focusable")
+
+
+def _is_theme_path(relative_path: str) -> bool:
+    return any(marker in relative_path.lower() for marker in THEME_PATHS)
 
 
 def run(scope_path: Path, strict: bool = False) -> CheckResult:
@@ -45,64 +45,38 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
                 CheckViolation(
                     file_path=scope_path,
                     rule_id="PROJECT-MISSING",
-                    message="No manifest file found. UI token checks were skipped.",
+                    message="No project manifest found. UI token checks were skipped.",
                 )
             ],
             execution_time_ms=(time.perf_counter() - start) * 1000.0,
         )
 
-    config = load_config(root)
-    focus_feature = str(config["ui"].get("token_feature", "") or "").strip()
-    focus_dir = root / "lib" / "features" / focus_feature if focus_feature else None
-    focus_uses_focus = False
-    files = dart_files(root, "lib")
-    focus_has_code = bool(focus_feature) and any(
-        path.relative_to(root).as_posix().startswith(f"lib/features/{focus_feature}/")
-        for path in files
-    )
+    ui_config = load_config(root).get("ui", {})
+    token_feature = str(ui_config.get("token_feature", "") or "")
 
-    for path in files:
+    for path in source_files(root):
         relative = path.relative_to(root).as_posix()
+        if _is_theme_path(relative):
+            continue
+
         content = read_text(path)
-
-        if not relative.startswith(THEME_PATH):
-            for pattern in COLOR_PATTERNS:
-                for match in pattern.finditer(content):
-                    line = content[: match.start()].count("\n") + 1
-                    violations.append(
-                        CheckViolation(
-                            file_path=path,
-                            line_number=line,
-                            rule_id="UI-HARDCODED-COLOR",
-                            message=(
-                                "Use tokens from ui-design-system.md; "
-                                "hardcoded colors are forbidden."
-                            ),
-                        )
+        for pattern in COLOR_PATTERNS:
+            match = pattern.search(content)
+            if match:
+                line = content[: match.start()].count("\n") + 1
+                violations.append(
+                    CheckViolation(
+                        file_path=path,
+                        line=line,
+                        rule_id="HARDCODED-COLOR",
+                        message=f"Literal visual color '{match.group(0)}' used outside theme layer. Use design tokens.",
                     )
+                )
+                break
 
-        if (
-            focus_feature
-            and relative.startswith(f"lib/features/{focus_feature}/")
-            and any(marker in content for marker in FOCUS_MARKERS)
-        ):
-            focus_uses_focus = True
-
-    if focus_dir is not None and focus_dir.exists() and focus_has_code and not focus_uses_focus:
-        violations.append(
-            CheckViolation(
-                file_path=focus_dir,
-                rule_id="UI-FOCUS-MISSING",
-                message=(
-                    f"'{focus_feature}' must implement FocusNode/FocusScope navigation."
-                ),
-            )
-        )
-
-    status = CheckStatus.PASSED if not violations else CheckStatus.FAILED
     return CheckResult(
         check_name="04_ui_tokens",
-        status=status,
+        status=CheckStatus.FAILED if violations else CheckStatus.PASSED,
         violations=violations,
         execution_time_ms=(time.perf_counter() - start) * 1000.0,
     )

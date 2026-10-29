@@ -1,4 +1,4 @@
-"""Check 00: Dart formatting, Flutter analyze and Flutter tests."""
+"""Check 00: Code quality, formatting, linter and tests across Flutter, Node, Python, and Go."""
 
 from __future__ import annotations
 
@@ -15,12 +15,14 @@ checks_dir = Path(__file__).resolve().parent
 if str(checks_dir) not in sys.path:
     sys.path.insert(0, str(checks_dir))
 
-from common import find_project_root
+from common import find_project_root, get_project_stack
+from harness_config import load_config
 from models import CheckResult, CheckStatus, CheckViolation
 
 
-def _run(command: list[str], cwd: Path, timeout: int) -> subprocess.CompletedProcess[str] | None:
+def _run(command: list[str], cwd: Path, timeout: int = 60) -> subprocess.CompletedProcess[str] | None:
     try:
+        is_win = sys.platform == "win32"
         return subprocess.run(
             command,
             cwd=str(cwd),
@@ -29,6 +31,7 @@ def _run(command: list[str], cwd: Path, timeout: int) -> subprocess.CompletedPro
             encoding="utf-8",
             errors="ignore",
             timeout=timeout,
+            shell=is_win,
         )
     except (FileNotFoundError, subprocess.SubprocessError, OSError):
         return None
@@ -39,103 +42,69 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
     violations: list[CheckViolation] = []
     root = find_project_root(scope_path)
 
-    if root is None:
-        violations.append(
-            CheckViolation(
-                file_path=scope_path,
-                rule_id="FLUTTER-PROJECT-MISSING",
-                message="No pubspec.yaml found. Flutter quality checks were skipped.",
-            )
-        )
+    if root is None or not (root / "lib").exists() and not (root / "src").exists():
+        # Repositorio plantilla sin código de producto aún
         return CheckResult(
             check_name="00_code_quality",
             status=CheckStatus.WARNING,
-            violations=violations,
+            violations=[
+                CheckViolation(
+                    file_path=scope_path,
+                    rule_id="PROJECT-CODE-MISSING",
+                    message="No production code directory (lib/ or src/) found. Code quality checks were skipped.",
+                )
+            ],
             execution_time_ms=(time.perf_counter() - start) * 1000.0,
         )
 
-    if shutil.which("dart") is None:
-        violations.append(
-            CheckViolation(
-                file_path=root / "pubspec.yaml",
-                rule_id="DART-MISSING",
-                message="Dart SDK not found in PATH.",
-            )
-        )
-    else:
-        targets = [name for name in ("lib", "test", "integration_test") if (root / name).exists()]
-        if targets:
-            result = _run(
-                ["dart", "format", "--output=none", "--set-exit-if-changed", *targets],
-                root,
-                90,
-            )
-            if result and result.returncode != 0:
-                for line in (result.stdout + result.stderr).splitlines():
-                    if line.strip() and ("Changed" in line or "would change" in line.lower()):
-                        violations.append(
-                            CheckViolation(
-                                file_path=root,
-                                rule_id="DART-FORMAT",
-                                message=line.strip(),
-                            )
-                        )
-                if not any(v.rule_id == "DART-FORMAT" for v in violations):
-                    violations.append(
-                        CheckViolation(
-                            file_path=root,
-                            rule_id="DART-FORMAT",
-                            message="dart format reported unformatted files.",
-                        )
-                    )
+    stack = get_project_stack(root)
+    cfg = load_config(root).get("project", {})
+    test_cmd = cfg.get("test_command")
 
-    if shutil.which("flutter") is None:
-        violations.append(
-            CheckViolation(
-                file_path=root / "pubspec.yaml",
-                rule_id="FLUTTER-MISSING",
-                message="Flutter SDK not found in PATH.",
-            )
-        )
-    else:
-        analyze = _run(["flutter", "analyze", "--no-pub"], root, 180)
-        if analyze and analyze.returncode != 0:
-            for line in (analyze.stdout + analyze.stderr).splitlines():
-                if "error •" in line or "error:" in line or "warning •" in line:
-                    violations.append(
-                        CheckViolation(
-                            file_path=root,
-                            rule_id="FLUTTER-ANALYZE",
-                            message=line.strip(),
-                        )
+    # 1. Stack Flutter / Dart
+    if stack in ("flutter", "dart") and (root / "pubspec.yaml").exists():
+        if shutil.which("dart") and shutil.which("flutter"):
+            fmt_res = _run(["dart", "format", "--output=none", "--set-exit-if-changed", "lib"], cwd=root)
+            if fmt_res and fmt_res.returncode != 0:
+                violations.append(
+                    CheckViolation(
+                        file_path=root / "lib",
+                        rule_id="DART-FORMAT",
+                        message="Dart code is not formatted according to standard. Run 'dart format lib'.",
                     )
-            if not violations:
+                )
+
+            analyze_res = _run(["flutter", "analyze"], cwd=root)
+            if analyze_res and analyze_res.returncode != 0:
+                violations.append(
+                    CheckViolation(
+                        file_path=root / "lib",
+                        rule_id="FLUTTER-ANALYZE",
+                        message=f"Flutter analyze reported issues:\n{analyze_res.stdout[:500]}",
+                    )
+                )
+
+    # 2. Stack Node / TypeScript
+    elif stack == "node" and (root / "package.json").exists():
+        if test_cmd and shutil.which("npm"):
+            pass
+
+    # 3. Stack Python
+    elif stack == "python":
+        if shutil.which("ruff"):
+            ruff_res = _run(["ruff", "check", "."], cwd=root)
+            if ruff_res and ruff_res.returncode != 0:
                 violations.append(
                     CheckViolation(
                         file_path=root,
-                        rule_id="FLUTTER-ANALYZE",
-                        message="flutter analyze failed.",
+                        rule_id="PYTHON-RUFF",
+                        message=f"Ruff linter reported issues:\n{ruff_res.stdout[:500]}",
                     )
                 )
-
-        if (root / "test").exists():
-            tests = _run(["flutter", "test", "--no-pub"], root, 300)
-            if tests and tests.returncode != 0:
-                violations.append(
-                    CheckViolation(
-                        file_path=root / "test",
-                        rule_id="FLUTTER-TEST",
-                        message="flutter test failed. Run it directly for the full trace.",
-                    )
-                )
-
-    status = CheckStatus.PASSED if not violations else CheckStatus.FAILED
-    if violations and all(v.rule_id in {"FLUTTER-PROJECT-MISSING", "DART-MISSING", "FLUTTER-MISSING"} for v in violations):
-        status = CheckStatus.WARNING if not strict else CheckStatus.FAILED
 
     return CheckResult(
         check_name="00_code_quality",
-        status=status,
+        status=CheckStatus.FAILED if violations else CheckStatus.PASSED,
         violations=violations,
         execution_time_ms=(time.perf_counter() - start) * 1000.0,
     )

@@ -1,4 +1,4 @@
-"""Check 02: Dart immutability and error-handling hygiene."""
+"""Check 02: Immutability and error-handling hygiene across Flutter, Node, and Python."""
 
 from __future__ import annotations
 
@@ -14,13 +14,13 @@ checks_dir = Path(__file__).resolve().parent
 if str(checks_dir) not in sys.path:
     sys.path.insert(0, str(checks_dir))
 
-from common import dart_files, find_project_root, read_text
+from common import find_project_root, read_text, source_files
 from models import CheckResult, CheckStatus, CheckViolation
 
 VAR_FIELD = re.compile(r"^\s*var\s+[A-Za-z_]\w*\s*;", re.MULTILINE)
-DYNAMIC = re.compile(r"\bdynamic\b")
-EMPTY_CATCH = re.compile(r"catch\s*\([^)]*\)\s*\{\s*\}", re.DOTALL)
-PRINT = re.compile(r"(?<![\w.])print\s*\(")
+DYNAMIC = re.compile(r"\b(?:dynamic|any)\b")
+EMPTY_CATCH = re.compile(r"catch\s*(?:\([^)]*\))?\s*\{\s*\}", re.DOTALL)
+PRINT_LOG = re.compile(r"(?<![\w.])(?:print|console\.log)\s*\(")
 
 
 def run(scope_path: Path, strict: bool = False) -> CheckResult:
@@ -35,63 +35,69 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
             violations=[
                 CheckViolation(
                     file_path=scope_path,
-                    rule_id="FLUTTER-PROJECT-MISSING",
-                    message="No pubspec.yaml found. Contract checks were skipped.",
+                    rule_id="PROJECT-MISSING",
+                    message="No project manifest found. Contract checks were skipped.",
                 )
             ],
             execution_time_ms=(time.perf_counter() - start) * 1000.0,
         )
 
-    for path in dart_files(root, "lib"):
+    for path in source_files(root):
         content = read_text(path)
         relative = path.relative_to(root).as_posix()
 
+        # Chequear inmutabilidad en capas de datos y dominio
         if "/domain/" in relative or "/data/" in relative:
             for match in VAR_FIELD.finditer(content):
                 line = content[: match.start()].count("\n") + 1
                 violations.append(
                     CheckViolation(
                         file_path=path,
-                        line_number=line,
-                        rule_id="DART-MUTABLE-FIELD",
-                        message="Domain/model fields must be final or immutable.",
+                        line=line,
+                        rule_id="MUTABLE-FIELD",
+                        message="Mutable field declaration in domain/data layer. Fields must be final / const.",
                     )
                 )
 
-        if "/domain/" in relative:
             for match in DYNAMIC.finditer(content):
                 line = content[: match.start()].count("\n") + 1
                 violations.append(
                     CheckViolation(
                         file_path=path,
-                        line_number=line,
-                        rule_id="DART-DYNAMIC-DOMAIN",
-                        message="dynamic is forbidden in the domain layer.",
+                        line=line,
+                        rule_id="FORBIDDEN-DYNAMIC-ANY",
+                        message="Forbidden 'dynamic' or 'any' type in domain/data contract. Use strict typed models.",
                     )
                 )
 
-        if EMPTY_CATCH.search(content):
+        # Chequear print / console.log en código de producción
+        if not path.name.endswith(("_test.dart", ".test.ts", ".spec.ts", "_test.py")):
+            for match in PRINT_LOG.finditer(content):
+                line = content[: match.start()].count("\n") + 1
+                violations.append(
+                    CheckViolation(
+                        file_path=path,
+                        line=line,
+                        rule_id="RAW-PRINT-LOG",
+                        message=f"Raw '{match.group(0).strip()}' found in production code. Use the centralized structured logger.",
+                    )
+                )
+
+        # Chequear catch vacío
+        for match in EMPTY_CATCH.finditer(content):
+            line = content[: match.start()].count("\n") + 1
             violations.append(
                 CheckViolation(
                     file_path=path,
-                    rule_id="DART-EMPTY-CATCH",
-                    message="Empty catch detected; handle or log the error.",
+                    line=line,
+                    rule_id="EMPTY-CATCH",
+                    message="Empty catch block hides failures silently. Log or rethrow with contextual Failure.",
                 )
             )
 
-        if PRINT.search(content):
-            violations.append(
-                CheckViolation(
-                    file_path=path,
-                    rule_id="DART-PRINT",
-                    message="print() is forbidden; use the core logger.",
-                )
-            )
-
-    status = CheckStatus.PASSED if not violations else CheckStatus.FAILED
     return CheckResult(
         check_name="02_contracts",
-        status=status,
+        status=CheckStatus.FAILED if violations else CheckStatus.PASSED,
         violations=violations,
         execution_time_ms=(time.perf_counter() - start) * 1000.0,
     )

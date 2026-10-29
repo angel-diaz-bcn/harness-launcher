@@ -18,6 +18,23 @@ class StackType(StrEnum):
     RUST = "rust"
 
 
+class GitProvider(StrEnum):
+    GITLAB = "gitlab"
+    GITHUB = "github"
+    BITBUCKET = "bitbucket"
+    OTHER = "other"
+    NONE = "none"
+
+
+class GitRemoteConfig(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    url: str = Field(default="", description="URL del repositorio remoto Git")
+    provider: GitProvider = Field(default=GitProvider.NONE, description="Proveedor Git detectado")
+    auth_protocol: str = Field(default="ssh", description="Protocolo de autenticación: ssh | https")
+    setup_ci: bool = Field(default=True, description="Generar pipeline de CI (.gitlab-ci.yml o GitHub Actions)")
+
+
 class ProjectIdentity(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -38,6 +55,8 @@ class TechStack(BaseModel):
     framework: str = Field(default="", description="Framework de desarrollo (ej. Flutter, FastAPI, Express)")
     package_manager: str = Field(default="", description="Gestor de paquetes (pub, poetry, pip, pnpm)")
     min_runtime_version: str = Field(default="", description="Versión mínima del runtime")
+    launch_command: str = Field(default="", description="Comando para arrancar la aplicación (usado por launch-app)")
+    test_command: str = Field(default="", description="Comando para ejecutar tests unitarios/integración")
 
 
 class ArchitectureConfig(BaseModel):
@@ -134,8 +153,8 @@ class BootstrapManifest(BaseModel):
     ui: UIConfig
     failure_modes: list[FailureModeItem]
     adr_0001: ADRItem
+    git_remote: GitRemoteConfig = Field(default_factory=GitRemoteConfig)
     referenced_documents: list[str] = Field(
         default_factory=list,
         description="Documentos de .ai-harness/input analizados para alimentar el arnés",
     )
-

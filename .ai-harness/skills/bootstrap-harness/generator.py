@@ -1,14 +1,36 @@
 """
-Generator Engine: Generación atómica 360° del arnés personalizado.
-Produce harness.config.yaml, AGENTS.md, README.md, .gitignore, .aiignore,
-los 12 contextos, scopes, memoria y contratos SDD.
+Generator Engine: Orquestador atómico 360° de generación de alta fidelidad.
+Coordina la creación de todo el arnés de forma perfecta y en el orden exacto:
+1. Configuración raíz (harness.config.yaml)
+2. Los 12 contextos normativos profundos (context_gen.py)
+3. Scopes contractuales con identidad, posee/no posee e invariantes (scope_gen.py)
+4. Suite completa de diseño: 6 docs + tokens.json (design_system_gen.py)
+5. Memoria preventiva: fallos + 3 ADRs técnicos (memory_gen.py)
+6. Semilla SDD: 4 componentes + 1 proceso (sdd_gen.py)
+7. Fixtures deterministas (.ai-harness/fixtures/README.md)
+8. Motor de skills (.ai-harness/skills/) y carpeta .agents/ (SKILL.md por skill y README de índice)
+9. Carpeta .clinerules/ (rules.md adaptado al stack y workflows invocables)
+10. Ficheros .gitignore y .aiignore adaptados a la tecnología
+11. Repositorio remoto Git y canalización CI/CD (GitLab vs GitHub)
+12. Dependencias del arnés (requirements.txt)
+13. Manifiesto del arnés (MANIFEST.md)
+14. README.md de la raíz del producto
+15. Y AL FINAL: AGENTS.md como orquestador estricto sin reglas de negocio
 """
 
 from __future__ import annotations
 
-import json
+import shutil
+import subprocess
 from pathlib import Path
-from models import BootstrapManifest, StackType
+from models import BootstrapManifest, GitProvider, StackType
+
+from generators.context_gen import ContextGenerator
+from generators.design_system_gen import DesignSystemGenerator
+from generators.memory_gen import MemoryGenerator
+from generators.scope_gen import ScopeGenerator
+from generators.sdd_gen import SDDGenerator
+from generators.skills_gen import SkillsGenerator
 
 
 class HarnessGenerator:
@@ -30,17 +52,53 @@ class HarnessGenerator:
         target_path.write_text(content.strip() + "\n", encoding="utf-8")
 
     def execute(self) -> list[str]:
-        """Genera el árbol completo del arnés."""
+        """Genera el árbol completo del arnés en el orden de gobernanza estricto."""
+        # 1. Configuración estructural primero
         self._generate_harness_config()
-        self._generate_agents_md()
-        self._generate_readme_md()
+
+        # 2. Contexto normativo profundo (12 documentos)
+        self._generate_context_files()
+
+        # 3. Scopes contractuales
+        self._generate_scope_files()
+
+        # 4. Suite completa de Sistema de Diseño (6 documentos + tokens.json)
+        self._generate_design_system()
+
+        # 5. Memoria preventiva (Modos de fallo + 3 ADRs)
+        self._generate_memory_and_adrs()
+
+        # 6. Semilla SDD (CMP-00 a CMP-03 y PRC-01)
+        self._generate_sdd()
+
+        # 7. Fixtures deterministas
+        self._generate_fixtures_readme()
+
+        # 8. Skills de .ai-harness y carpeta .agents/
+        self._generate_skills_and_agents()
+
+        # 9. Carpeta .clinerules/ (rules.md y workflows)
+        self._generate_clinerules()
+
+        # 10. Ficheros .gitignore y .aiignore específicos del stack
         self._generate_gitignore()
         self._generate_aiignore()
-        self._generate_context_files()
-        self._generate_scope_files()
-        self._generate_memory_and_adrs()
-        self._generate_design_system()
-        self._generate_bootstrap_spec()
+
+        # 11. Configuración de repositorio remoto y canalización CI/CD
+        self._setup_git_remote_and_ci()
+
+        # 12. Dependencias del arnés (requirements.txt)
+        self._generate_requirements_txt()
+
+        # 13. Manifiesto del arnés (MANIFEST.md)
+        self._generate_manifest_md()
+
+        # 14. README.md de presentación del producto
+        self._generate_readme_md()
+
+        # 15. Y AL FINAL: AGENTS.md (orquestador maestro con todos los scopes y workflows)
+        self._generate_agents_md()
+
         return self.generated_files
 
     # -------------------------------------------------------------------------
@@ -58,6 +116,10 @@ project:
   name: "{m.identity.name}"
   slug: "{m.identity.slug}"
   stack: {m.stack.stack_type.value}
+  launch_command: "{m.stack.launch_command}"
+  test_command: "{m.stack.test_command}"
+  git_provider: "{m.git_remote.provider.value}"
+  remote_url: "{m.git_remote.url}"
 
 context:
   required:
@@ -143,10 +205,442 @@ invariants:
         self._write(self.workspace_root / "harness.config.yaml", content)
 
     # -------------------------------------------------------------------------
-    # 2. AGENTS.md (Orquestador Estricto)
+    # 2. Los 12 Contextos Normativos (.ai-harness/context/)
+    # -------------------------------------------------------------------------
+    def _generate_context_files(self) -> None:
+        gen = ContextGenerator(self.manifest)
+        for filename, content in gen.generate_all().items():
+            self._write(self.harness_dir / "context" / filename, content)
+
+    # -------------------------------------------------------------------------
+    # 3. Scopes Contractuales (.ai-harness/scopes/)
+    # -------------------------------------------------------------------------
+    def _generate_scope_files(self) -> None:
+        gen = ScopeGenerator(self.manifest)
+        for scope in self.manifest.scopes:
+            content = gen.generate_scope(scope)
+            self._write(self.harness_dir / "scopes" / f"block_{scope.name}.md", content)
+
+    # -------------------------------------------------------------------------
+    # 4. Suite completa de Sistema de Diseño (.ai-harness/design-system/)
+    # -------------------------------------------------------------------------
+    def _generate_design_system(self) -> None:
+        gen = DesignSystemGenerator(self.manifest)
+        for filename, content in gen.generate_all().items():
+            self._write(self.harness_dir / "design-system" / filename, content)
+
+    # -------------------------------------------------------------------------
+    # 5. Memoria y Decisiones (.ai-harness/memory/)
+    # -------------------------------------------------------------------------
+    def _generate_memory_and_adrs(self) -> None:
+        gen = MemoryGenerator(self.manifest)
+        for filename, content in gen.generate_all().items():
+            self._write(self.harness_dir / "memory" / filename, content)
+
+    # -------------------------------------------------------------------------
+    # 6. Semilla SDD (.ai-harness/sdd/)
+    # -------------------------------------------------------------------------
+    def _generate_sdd(self) -> None:
+        gen = SDDGenerator(self.manifest)
+        for filepath, content in gen.generate_all().items():
+            self._write(self.harness_dir / "sdd" / filepath, content)
+
+    # -------------------------------------------------------------------------
+    # 7. Fixtures Deterministas (.ai-harness/fixtures/)
+    # -------------------------------------------------------------------------
+    def _generate_fixtures_readme(self) -> None:
+        content = """# Fixtures deterministas
+
+Datos de prueba reproducibles, sin red y sin servicios externos. Un fixture es
+entrada conocida con salida esperada: si cambia el fixture, cambia el test.
+
+## Estructura sugerida
+
+```
+fixtures/
+├── valid/       # Casos que deben procesarse sin error
+├── invalid/     # Casos que deben rechazarse con un error concreto
+└── edge/        # Límites: vacío, máximo, duplicado, formato inesperado
+```
+
+## Reglas
+
+- Los fixtures no contienen datos personales ni contenido con derechos.
+- Cada fixture declara en su nombre el caso que representa.
+- Los tests no descargan fixtures de Internet.
+- Los logs de fallo no se guardan aquí: van a `memory/ephemeral_feedback/`.
+- Un fixture sin test que lo consuma es deuda: se elimina o se usa.
+"""
+        self._write(self.harness_dir / "fixtures" / "README.md", content)
+
+    # -------------------------------------------------------------------------
+    # 8. Skills de .ai-harness y carpeta .agents/
+    # -------------------------------------------------------------------------
+    def _generate_skills_and_agents(self) -> None:
+        m = self.manifest
+        skills_gen = SkillsGenerator(m)
+
+        # 1. Si el workspace destino es diferente al lanzador, copiar herramientas ejecutables de .ai-harness/skills/
+        launcher_skills_dir = Path(__file__).resolve().parent.parent
+        target_skills_dir = self.harness_dir / "skills"
+
+        if launcher_skills_dir.resolve() != target_skills_dir.resolve():
+            for item in launcher_skills_dir.iterdir():
+                if item.name.startswith((".", "__")) or item.name in ("bootstrap-harness", "registry.yaml"):
+                    continue
+                target_dest = target_skills_dir / item.name
+                if item.is_dir():
+                    for subfile in item.rglob("*"):
+                        if subfile.is_file() and not any(p.startswith((".", "__")) for p in subfile.parts):
+                            rel = subfile.relative_to(launcher_skills_dir)
+                            rel_target = target_skills_dir / rel
+                            self.generated_files.append(str(rel_target.relative_to(self.workspace_root)))
+                            if not self.dry_run:
+                                rel_target.parent.mkdir(parents=True, exist_ok=True)
+                                shutil.copy2(subfile, rel_target)
+                elif item.is_file():
+                    self.generated_files.append(str(target_dest.relative_to(self.workspace_root)))
+                    if not self.dry_run:
+                        target_dest.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(item, target_dest)
+
+        # 2. Generar .ai-harness/skills/registry.yaml adaptado al proyecto
+        self._write(self.harness_dir / "skills" / "registry.yaml", skills_gen.generate_registry_yaml())
+
+        # 3. Generar toda la suite de .agents/skills/
+        agents_skills_dir = self.workspace_root / ".agents" / "skills"
+        for rel_path, content in skills_gen.generate_agents_skills().items():
+            self._write(agents_skills_dir / rel_path, content)
+
+    # -------------------------------------------------------------------------
+    # 9. Carpeta .clinerules/ (rules.md y workflows)
+    # -------------------------------------------------------------------------
+    def _generate_clinerules(self) -> None:
+        m = self.manifest
+        skills_gen = SkillsGenerator(m)
+        clinerules_dir = self.workspace_root / ".clinerules"
+
+        for rel_path, content in skills_gen.generate_clinerules().items():
+            self._write(clinerules_dir / rel_path, content)
+
+    # -------------------------------------------------------------------------
+    # 10. .gitignore y .aiignore
+    # -------------------------------------------------------------------------
+    def _generate_gitignore(self) -> None:
+        m = self.manifest
+        extra_ignores = ""
+        stype = m.stack.stack_type
+
+        if stype in (StackType.FLUTTER, StackType.DART):
+            extra_ignores = """# --- Flutter & Dart ---
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+ephemeral/
+"""
+        elif stype == StackType.PYTHON:
+            extra_ignores = """# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+"""
+        elif stype == StackType.NODE:
+            extra_ignores = """# --- Node & Web / React Native ---
+node_modules/
+dist/
+build/
+.next/
+out/
+.expo/
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+"""
+        elif stype == StackType.GO:
+            extra_ignores = """# --- Go ---
+bin/
+dist/
+*.exe
+*.test
+vendor/
+"""
+        elif stype == StackType.RUST:
+            extra_ignores = """# --- Rust ---
+target/
+**/*.rs.bk
+"""
+
+        content = f"""# =============================================================================
+# .gitignore — {m.identity.name}
+# =============================================================================
+
+# --- Secretos, Entornos y Credenciales (PROHIBIDO EN GIT) ---
+.env
+.env.*
+*.pem
+*.key
+*.keystore
+*.p12
+
+# --- Sistema Operativo e IDEs ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# --- Caché del Arnés y Herramientas ---
+.spectra/
+*.log
+replay_pid*
+coverage/
+
+{extra_ignores}
+"""
+        self._write(self.workspace_root / ".gitignore", content)
+
+    def _generate_aiignore(self) -> None:
+        content = """# =============================================================================
+# .aiignore — Exclusiones de contexto para agentes de IA
+# =============================================================================
+.git/
+.spectra/
+node_modules/
+.venv/
+venv/
+build/
+dist/
+.next/
+.expo/
+.dart_tool/
+target/
+__pycache__/
+*.log
+*.lock
+*.sqlite
+*.db
+coverage/
+*.map
+"""
+        self._write(self.workspace_root / ".aiignore", content)
+
+    # -------------------------------------------------------------------------
+    # 11. Configuración Git Remoto y Pipeline CI/CD (GitLab vs GitHub)
+    # -------------------------------------------------------------------------
+    def _setup_git_remote_and_ci(self) -> None:
+        m = self.manifest
+        if m.git_remote.url and not self.dry_run:
+            try:
+                res = subprocess.run(["git", "remote", "get-url", "origin"], cwd=self.workspace_root, capture_output=True, text=True)
+                if res.returncode == 0:
+                    subprocess.run(["git", "remote", "set-url", "origin", m.git_remote.url], cwd=self.workspace_root, check=False)
+                else:
+                    subprocess.run(["git", "remote", "add", "origin", m.git_remote.url], cwd=self.workspace_root, check=False)
+            except Exception:
+                pass
+
+        if m.git_remote.setup_ci:
+            if m.git_remote.provider == GitProvider.GITLAB:
+                gitlab_ci = f"""stages:
+  - test
+  - preflight
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip/
+
+harness_validator:
+  stage: test
+  image: python:3.11-slim
+  script:
+    - pip install -r requirements.txt
+    - python .ai-harness/skills/harness-validator/runner.py
+
+preflight_gate:
+  stage: preflight
+  image: python:3.11-slim
+  script:
+    - pip install -r requirements.txt
+    - python .ai-harness/skills/preflight/runner.py
+    - python .ai-harness/skills/sync-sdd/runner.py
+"""
+                self._write(self.workspace_root / ".gitlab-ci.yml", gitlab_ci)
+
+            elif m.git_remote.provider == GitProvider.GITHUB:
+                github_ci = f"""name: Harness Quality Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Harness dependencies
+        run: pip install -r requirements.txt
+      - name: Run Harness Validator
+        run: python .ai-harness/skills/harness-validator/runner.py
+      - name: Run Preflight Checks
+        run: python .ai-harness/skills/preflight/runner.py
+      - name: Run SDD Sync Check
+        run: python .ai-harness/skills/sync-sdd/runner.py
+"""
+                self._write(self.workspace_root / ".github" / "workflows" / "harness-ci.yml", github_ci)
+
+    # -------------------------------------------------------------------------
+    # 12. Dependencias del arnés (requirements.txt)
+    # -------------------------------------------------------------------------
+    def _generate_requirements_txt(self) -> None:
+        content = """pyyaml>=6.0.0
+pydantic>=2.0.0
+"""
+        self._write(self.workspace_root / "requirements.txt", content)
+
+    # -------------------------------------------------------------------------
+    # 13. Manifiesto del arnés (MANIFEST.md)
+    # -------------------------------------------------------------------------
+    def _generate_manifest_md(self) -> None:
+        m = self.manifest
+        content = f"""# MANIFEST — qué copiar y qué no
+
+Lista canónica de los elementos que forman el arnés de {m.identity.name}. Al trasladarlo a un
+proyecto nuevo, se copia solo la sección 1.
+
+---
+
+## 1. Núcleo copiable
+
+| Ruta | Obligatorio | Función |
+|---|---|---|
+| `AGENTS.md` | Sí | Enrutador operativo |
+| `harness.config.yaml` | Sí | Configuración estructural |
+| `requirements.txt` | Sí | Dependencias del tooling |
+| `.aiignore` | Sí | Exclusión de contexto para el agente |
+| `.gitignore` | Sí | Exclusión de control de versiones |
+| `.clinerules/rules.md` | Sí | Reglas de integración del agente |
+| `.clinerules/workflows/*.md` | Sí | Workflows invocables con `/` |
+| `.agents/skills/<name>/SKILL.md` | Sí | Documentación de uso por skill |
+| `.agents/skills/README.md` | Sí | Índice de skills |
+| `.ai-harness/context/*` | Sí | 12 documentos normativos |
+| `.ai-harness/scopes/*` | Sí | Límites de escritura |
+| `.ai-harness/sdd/templates/*` | Sí | Plantillas y convención |
+| `.ai-harness/sdd/1_COMPONENTS/*` | Sí | Taxonomía de componentes |
+| `.ai-harness/sdd/2_PROCESSES/*` | Sí | Taxonomía de procesos |
+| `.ai-harness/memory/*` | Sí | Modos de fallo, ADRs y feedback |
+| `.ai-harness/design-system/*` | Sí | Tokens y documentos de diseño |
+| `.ai-harness/fixtures/README.md` | Sí | Convención de datos de prueba |
+| `.ai-harness/skills/**` | Sí | Validadores y runners |
+
+---
+
+## 2. No copiable
+
+| Ruta | Motivo |
+|---|---|
+| `README.md` | Presentación de este producto específico |
+| `MANIFEST.md` | Este archivo |
+| `.ai-harness/memory/ephemeral_feedback/*` | Logs locales de ejecución |
+| `.ai-harness/memory/sync-state.json` | Baseline generada por sync-sdd |
+| `.git/` | Historia del repositorio |
+"""
+        self._write(self.workspace_root / "MANIFEST.md", content)
+
+    # -------------------------------------------------------------------------
+    # 14. README.md de la raíz del producto
+    # -------------------------------------------------------------------------
+    def _generate_readme_md(self) -> None:
+        m = self.manifest
+        repo_info = ""
+        if m.git_remote.url:
+            repo_info = f"- **Repositorio remoto ({m.git_remote.provider.value.upper()}):** `{m.git_remote.url}`"
+
+        content = f"""# {m.identity.name}
+
+> {m.identity.description}
+
+Proyecto construido con **{m.stack.language}** ({m.stack.framework}) bajo **Clean Architecture** y desarrollo guiado por especificaciones (**SDD**).
+
+---
+
+## 1. Visión y Módulos del Producto
+
+- **Audiencia objetivo:** {m.identity.target_audience}
+- **Stack tecnológico:** {m.stack.language} | {m.stack.framework} | Gestor: `{m.stack.package_manager}`
+- **Plataformas objetivo:** {', '.join(m.platform.platforms)}
+- **Política de privacidad:** {m.platform.privacy_policy}
+{repo_info}
+
+### Módulos Principales (Scopes)
+{chr(10).join([f"- **{s.title} (`block_{s.name}`):** {s.description}" for s in m.scopes])}
+
+---
+
+## 2. Requisitos y Comandos de Desarrollo
+
+- Runtime de {m.stack.language} instalado en la máquina.
+- Python 3.11+ para la ejecución del tooling de gobernanza (`requirements.txt`).
+
+```bash
+# Instalación de dependencias del arnés
+python -m pip install -r requirements.txt
+
+# Arranque de la aplicación
+python .ai-harness/skills/launch-app/runner.py
+# (Comando subyacente: {m.stack.launch_command})
+
+# Ejecución de la suite de tests
+{m.stack.test_command}
+```
+
+---
+
+## 3. Puertas de Verificación de Calidad (Quality Gates)
+
+Antes de realizar commits o publicar cambios, el sistema valida la arquitectura e integridad:
+
+```bash
+python .ai-harness/skills/harness-validator/runner.py
+python .ai-harness/skills/preflight/runner.py
+python .ai-harness/skills/sync-sdd/runner.py
+```
+
+---
+
+## 4. Flujo de Trabajo para Agentes de IA
+
+Cualquier agente de IA que colabore en este repositorio debe comenzar leyendo obligatoriamente [`AGENTS.md`](file:///./AGENTS.md) y ejecutar la carga JIT en el orden exacto indicado antes de inspeccionar o modificar código.
+"""
+        self._write(self.workspace_root / "README.md", content)
+
+    # -------------------------------------------------------------------------
+    # 15. Y AL FINAL: AGENTS.md (Orquestador Estricto sin reglas de negocio)
     # -------------------------------------------------------------------------
     def _generate_agents_md(self) -> None:
         m = self.manifest
+        scopes_list = ", ".join([f"`block_{s.name}.md`" for s in m.scopes])
+
         content = f"""# AGENTS.md — Orquestador del arnés para {m.identity.name}
 
 Punto de entrada obligatorio para cualquier agente de IA en este repositorio.
@@ -164,7 +658,7 @@ Antes de leer código, proponer cambios o escribir archivos, cargar en este orde
 3. `.ai-harness/context/project_overview.md` — visión y módulos del producto.
 4. `.ai-harness/context/architecture_rules.md` — fronteras e invariantes.
 5. `.ai-harness/context/ui-design-system.md` y `.ai-harness/design-system/README.md`.
-6. `.ai-harness/scopes/block_*.md` — scope del área que se va a tocar.
+6. `.ai-harness/scopes/block_*.md` — scope del área que se va a tocar ({scopes_list}).
 7. `.ai-harness/context/sdd_framework.md` — gobernanza SDD y convención `.spec.md`.
 8. La spec `.spec.md` activa, si existe.
 9. `.ai-harness/memory/failure_modes.md` — fallos que no deben repetirse.
@@ -228,336 +722,9 @@ Antes de declarar una tarea terminada:
 """
         self._write(self.workspace_root / "AGENTS.md", content)
 
-    # -------------------------------------------------------------------------
-    # 3. README.md
-    # -------------------------------------------------------------------------
-    def _generate_readme_md(self) -> None:
-        m = self.manifest
-        content = f"""# {m.identity.name}
-
-> {m.identity.description}
-
-Proyecto construido con **{m.stack.language}** ({m.stack.framework}) bajo **Clean Architecture** y desarrollo guiado por especificaciones (**SDD**).
-
----
-
-## 1. Visión y Módulos
-
-- **Audiencia:** {m.identity.target_audience}
-- **Stack:** {m.stack.language} | {m.stack.framework} | Gestor: {m.stack.package_manager}
-- **Plataformas objetivo:** {', '.join(m.platform.platforms)}
-- **Privacidad:** {m.platform.privacy_policy}
-
-### Módulos Principales
-{chr(10).join([f"- **{s.title}:** {s.description}" for s in m.scopes])}
-
----
-
-## 2. Requisitos de Desarrollo
-
-- Python 3.11+ (para tooling del arnés de IA).
-- Runtime de {m.stack.language} instalado localmente.
-- Dependencias del arnés:
-  ```bash
-  python -m pip install -r requirements.txt
-  ```
-
----
-
-## 3. Puertas de Verificación (Quality Gates)
-
-Antes de realizar commits o publicar cambios, el sistema valida la arquitectura e integridad:
-
-```bash
-python .ai-harness/skills/harness-validator/runner.py
-python .ai-harness/skills/preflight/runner.py
-python .ai-harness/skills/sync-sdd/runner.py
-```
-
----
-
-## 4. Flujo de Trabajo para Agentes de IA
-
-Los agentes de IA que colaboren en este repositorio deben comenzar leyendo obligatoriamente [`AGENTS.md`](file:///./AGENTS.md) y cargar los contextos normativos en el orden JIT indicado.
-"""
-        self._write(self.workspace_root / "README.md", content)
-
-    # -------------------------------------------------------------------------
-    # 4. .gitignore y .aiignore
-    # -------------------------------------------------------------------------
-    def _generate_gitignore(self) -> None:
-        m = self.manifest
-        extra_ignores = ""
-        if m.stack.stack_type == StackType.FLUTTER:
-            extra_ignores = """
-# Flutter / Dart
-.dart_tool/
-.packages
-build/
-.flutter-plugins
-.flutter-plugins-dependencies
-"""
-        elif m.stack.stack_type == StackType.PYTHON:
-            extra_ignores = """
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-.venv/
-venv/
-.pytest_cache/
-.mypy_cache/
-"""
-        elif m.stack.stack_type == StackType.NODE:
-            extra_ignores = """
-# Node / Web
-node_modules/
-dist/
-.next/
-out/
-.npm/
-"""
-
-        content = f"""# Archivos de entorno y credenciales
-.env
-.env.*
-*.pem
-*.key
-*.keystore
-
-# Caché del sistema y arnés
-.spectra/
-__pycache__/
-*.log
-replay_pid*
-{extra_ignores}
-"""
-        self._write(self.workspace_root / ".gitignore", content)
-
-    def _generate_aiignore(self) -> None:
-        content = """# Exclusiones de contexto para agentes de IA
-.git/
-.spectra/
-build/
-dist/
-node_modules/
-.venv/
-__pycache__/
-*.log
-*.sqlite
-*.db
-"""
-        self._write(self.workspace_root / ".aiignore", content)
-
-    # -------------------------------------------------------------------------
-    # 5. Contextos Normativos (.ai-harness/context/)
-    # -------------------------------------------------------------------------
-    def _generate_context_files(self) -> None:
-        m = self.manifest
-        c_dir = self.harness_dir / "context"
-
-        self._write(c_dir / "system_identity.md", f"""# Identidad del sistema — {m.identity.name}
-
-- **Identidad:** Arquitecto de software de {m.identity.name}.
-- **Dominio técnico:** {m.stack.language} con {m.stack.framework} ({m.architecture.style}).
-- **Propósito:** {m.identity.description}.
-
-## Límites no negociables
-1. SDD-First: sin código de producción sin spec aprobada.
-2. Privacidad: {m.platform.privacy_policy}.
-3. Calidad: todas las puertas preflight deben pasar en verde.
-""")
-
-        self._write(c_dir / "project_overview.md", f"""# Visión General del Proyecto — {m.identity.name}
-
-## 1. Misión
-{m.identity.description}
-
-## 2. Audiencia Objetivo
-{m.identity.target_audience}
-
-## 3. Módulos
-{chr(10).join([f"- **{s.title} ({s.name}):** {s.description}" for s in m.scopes])}
-""")
-
-        self._write(c_dir / "architecture_rules.md", f"""# Reglas de Arquitectura — {m.identity.name}
-
-- **Estilo:** {m.architecture.style}.
-- **Persistencia:** {m.architecture.persistence}.
-
-## Invariantes Estructurales
-1. Las capas superiores consumen las inferiores a través de interfaces (abstracciones).
-2. La capa de dominio es pura y agnóstica a librerías de UI o frameworks externos.
-3. Paquetes vetados: {', '.join(m.architecture.forbidden_packages)}.
-""")
-
-        self._write(c_dir / "project_structure.md", f"""# Estructura del Código — {m.identity.name}
-
-```
-lib/ o src/
-├── core/             # Infraestructura común y utilidades
-├── domain/           # Entidades y contratos puros de negocio
-├── infrastructure/   # Implementación de repositorios y adaptadores
-└── presentation/     # Vistas y componentes visuales
-```
-""")
-
-        self._write(c_dir / "coding_standards.md", f"""# Estándares de Código — {m.identity.name}
-
-- **Lenguaje:** {m.stack.language}.
-- **Tipado:** Tipado estático estricto, sin tipos implícitos ni variables no verificadas.
-- **Asincronía:** Manejo obligatorio de errores en llamadas I/O.
-""")
-
-        self._write(c_dir / "platform_matrix.md", f"""# Matriz de Plataformas — {m.identity.name}
-
-Plataformas soportadas oficialmente:
-{chr(10).join([f"- {p}" for p in m.platform.platforms])}
-""")
-
-        self._write(c_dir / "security_privacy.md", f"""# Seguridad y Privacidad — {m.identity.name}
-
-- **Política de telemetría:** {m.platform.privacy_policy}.
-- **Gestión de secretos:** {m.platform.secrets_management}. Prohibido hardcodear credenciales en git.
-""")
-
-        self._write(c_dir / "glossary.md", f"""# Glosario de Términos — {m.identity.name}
-
-Términos canónicos del dominio:
-- **{m.identity.name}:** El sistema principal.
-- **Scope:** Límite modular de responsabilidad y escritura.
-- **Spec:** Especificación formal técnica antes de la codificación.
-""")
-
-        self._write(c_dir / "ui-design-system.md", f"""# Sistema de Diseño y Tokens — {m.identity.name}
-
-- **UI activa:** {'Sí' if m.ui.has_ui else 'No'}.
-- **Tema preferente:** {m.ui.theme_preference}.
-- **Foco universal:** {'Obligatorio para teclado / D-Pad' if m.ui.focus_navigation_required else 'No requerido'}.
-- **Valores visuales:** Prohibidos colores HEX literales en código de presentación; usar design-system/tokens.json.
-""")
-
-    # -------------------------------------------------------------------------
-    # 6. Scopes (.ai-harness/scopes/)
-    # -------------------------------------------------------------------------
-    def _generate_scope_files(self) -> None:
-        s_dir = self.harness_dir / "scopes"
-        for scope in self.manifest.scopes:
-            content = f"""# Scope: {scope.title}
-
-- **Nombre:** `{scope.name}`
-- **Descripción:** {scope.description}
-
-## Rutas Autorizadas (path_roots)
-{chr(10).join([f"- `{p}`" for p in scope.path_roots]) or "- `lib/`"}
-
-## Rutas Prohibidas (forbidden_paths)
-{chr(10).join([f"- `{p}`" for p in scope.forbidden_paths]) or "- Ninguna"}
-"""
-            self._write(s_dir / f"block_{scope.name}.md", content)
-
-    # -------------------------------------------------------------------------
-    # 7. Memoria y Decisiones (.ai-harness/memory/)
-    # -------------------------------------------------------------------------
-    def _generate_memory_and_adrs(self) -> None:
-        m_dir = self.harness_dir / "memory"
-        fm_content = f"""# Catálogo de Modos de Fallo — {self.manifest.identity.name}
-
-{chr(10).join([f'''## {fm.id} — {fm.title}
-
-- **Síntoma:** {fm.symptom}
-- **Causa raíz:** {fm.root_cause}
-- **Mitigación obligatoria:** {fm.mitigation}
-''' for fm in self.manifest.failure_modes])}
-"""
-        self._write(m_dir / "failure_modes.md", fm_content)
-
-        adr = self.manifest.adr_0001
-        adr_content = f"""# {adr.id}: {adr.title}
-
-- **Estado:** {adr.status}
-- **Fecha:** Inicialización del proyecto
-
-## Contexto
-{adr.context}
-
-## Decisión
-{adr.decision}
-
-## Consecuencias
-{adr.consequences}
-"""
-        self._write(m_dir / "decisions" / f"{adr.id}-stack-base.md", adr_content)
-
-    # -------------------------------------------------------------------------
-    # 8. Sistema de Diseño
-    # -------------------------------------------------------------------------
-    def _generate_design_system(self) -> None:
-        tokens = {
-            "version": "1.0.0",
-            "theme": self.manifest.ui.theme_preference,
-            "colors": {
-                "background": "#121212" if self.manifest.ui.theme_preference == "dark" else "#FFFFFF",
-                "surface": "#1E1E1E" if self.manifest.ui.theme_preference == "dark" else "#F5F5F5",
-                "primary": "#3B82F6",
-                "text": "#E5E7EB" if self.manifest.ui.theme_preference == "dark" else "#1F2937",
-                "error": "#EF4444",
-                "success": "#10B981"
-            },
-            "spacing": {
-                "xs": 4,
-                "sm": 8,
-                "md": 16,
-                "lg": 24,
-                "xl": 32
-            }
-        }
-        self._write(
-            self.harness_dir / "design-system" / "tokens.json",
-            json.dumps(tokens, indent=2, ensure_ascii=False),
-        )
-
-    # -------------------------------------------------------------------------
-    # 9. SDD Inicial (CMP-00-app-bootstrap)
-    # -------------------------------------------------------------------------
-    def _generate_bootstrap_spec(self) -> None:
-        m = self.manifest
-        spec_content = f"""---
-spec_id: CMP-00
-spec_type: component
-name: app-bootstrap
-target: lib/core/bootstrap.dart
-block: 1_COMPONENTS
-status: approved
-version: 1.0.0
-owner: arquitecto
-last_reviewed: 2026-10-29
-approved_at: 2026-10-29
-approved_by: arquitecto
-supersedes: null
-superseded_by: null
-user_story: Como usuario, quiero arrancar {m.identity.name} de forma rápida e íntegra.
----
-
-# CMP-00 — Inicialización y Arranque de {m.identity.name}
-
-Inicializa los servicios esenciales, dependencias del núcleo y la configuración antes de presentar la pantalla principal.
-
-## 1. Contrato de Arranque
-- Carga de variables de entorno seguras.
-- Inicialización de persistencia ({m.architecture.persistence}).
-- Verificación de integridad inicial.
-
-## Mapa de implementación
-- [ ] `lib/core/bootstrap` — inicialización de dependencias principales.
-"""
-        spec_dir = self.harness_dir / "sdd" / "1_COMPONENTS" / "bootstrap"
-        self._write(spec_dir / "CMP-00-app-bootstrap.spec.md", spec_content)
-
     @staticmethod
     def _to_yaml_list(items: list[str], indent: int = 4) -> str:
         prefix = " " * indent
         if not items:
             return f"{prefix}[]"
         return "\n".join([f"{prefix}- {item}" for item in items])
-
