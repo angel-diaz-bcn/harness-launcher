@@ -166,3 +166,6 @@ replay_pid*
 # --- Fin del .gitignore ------------------------------------------------------
 # Regla: una sección por tecnología o riesgo. Sin entradas huérfanas ni
 # excepciones implícitas: toda excepción se documenta en su línea.
+
+# SPECTRA Harness Cache
+.spectra/
