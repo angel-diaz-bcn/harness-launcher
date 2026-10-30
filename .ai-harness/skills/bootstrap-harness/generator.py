@@ -291,8 +291,8 @@ fixtures/
                 target_dest = target_skills_dir / item.name
                 if item.is_dir():
                     for subfile in item.rglob("*"):
-                        if subfile.is_file() and not any(p.startswith((".", "__")) for p in subfile.parts):
-                            rel = subfile.relative_to(launcher_skills_dir)
+                        rel = subfile.relative_to(launcher_skills_dir)
+                        if subfile.is_file() and not any(p.startswith((".", "__")) for p in rel.parts):
                             rel_target = target_skills_dir / rel
                             self.generated_files.append(str(rel_target.relative_to(self.workspace_root)))
                             if not self.dry_run:
