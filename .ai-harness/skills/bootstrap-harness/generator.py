@@ -241,6 +241,15 @@ invariants:
     # 6. Semilla SDD (.ai-harness/sdd/)
     # -------------------------------------------------------------------------
     def _generate_sdd(self) -> None:
+        # Copiar plantillas canónicas de SDD
+        launcher_templates = Path(__file__).resolve().parent.parent.parent / "sdd" / "templates"
+        target_templates = self.harness_dir / "sdd" / "templates"
+        if launcher_templates.exists():
+            for tpl in launcher_templates.glob("*"):
+                if tpl.is_file():
+                    content = tpl.read_text(encoding="utf-8", errors="ignore")
+                    self._write(target_templates / tpl.name, content)
+
         gen = SDDGenerator(self.manifest)
         for filepath, content in gen.generate_all().items():
             self._write(self.harness_dir / "sdd" / filepath, content)

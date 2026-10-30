@@ -17,17 +17,68 @@ class MemoryGenerator:
     def generate_all(self) -> dict[str, str]:
         files: dict[str, str] = {
             "failure_modes.md": self._failure_modes(),
+            "decisions/README.md": self._decisions_readme(),
             "decisions/ADR-0001-stack-base.md": self._adr_0001(),
             "decisions/ADR-0002-clean-architecture.md": self._adr_0002(),
             "decisions/ADR-0003-persistence-strategy.md": self._adr_0003(),
+            "ephemeral_feedback/README.md": self._ephemeral_readme(),
         }
         return files
+
+    def _decisions_readme(self) -> str:
+        return """# Decisiones de arquitectura (ADR)
+
+Cada decisión estructural relevante se registra aquí como un documento corto,
+inmutable y numerado.
+
+## Convención
+
+```
+decisions/
+├── README.md
+├── ADR-0001-<slug>.md
+└── ADR-0002-<slug>.md
+```
+
+## Reglas
+
+- Un ADR describe context, decision, consecuencias y alternativas.
+- Un ADR no se reescribe: si la decisión cambia, se crea otro ADR que la reemplaza.
+"""
+
+    def _ephemeral_readme(self) -> str:
+        return """# Ephemeral Feedback
+
+Directorio para almacenar logs temporales de ejecución y fallos de validación.
+Estos archivos no forman parte de la arquitectura del producto ni se commitean.
+"""
 
     def _failure_modes(self) -> str:
         m = self.manifest
         items = []
-        for fm in m.failure_modes:
-            items.append(f"""## {fm.id} — {fm.title}
+        
+        # Garantizar al menos 5 modos de fallo canónicos y formato FM-NNN
+        fms = list(m.failure_modes)
+        if len(fms) < 5:
+            default_extras = [
+                ("Violación de Tokens de Diseño", "Colores HEX o dimensiones hardcodeadas en componentes UI.", "La IA genera estilos rápidos sin consultar design-system/tokens.json.", "El validador preflight bloquea cualquier HEX literal. Usar exclusivamente tokens semánticos."),
+                ("Código de Producción sin Spec Aprobada", "Creación de archivos en lib/ o src/ sin .spec.md en status: APPROVED.", "Asumir requerimientos informales sin contrato BDD ni trazabilidad.", "Principio SDD-First estricto: toda implementación requiere spec aprobada previa."),
+                ("Fugas de Tipado Dinámico o Genérico", "Uso de 'any' o 'dynamic' en modelos y contratos de dominio.", "La IA relaja tipos para evitar errores de compilador inmediatos.", "Prohibición estricta de any/dynamic; modelos inmutables y tipado exhaustivo en contratos."),
+                ("Captura Vacía de Errores y Silencio de Excepciones", "Bloques try/catch vacíos que ocultan fallos de runtime.", "Intentar que una operación no rompa la ejecución sin registrar ni manejar el error.", "Manejo explícito de excepciones, logging centralizado y degradación controlada."),
+            ]
+            for title, symptom, root_cause, mitigation in default_extras:
+                if len(fms) >= 5:
+                    break
+                fms.append(type("FM", (), {
+                    "title": title,
+                    "symptom": symptom,
+                    "root_cause": root_cause,
+                    "mitigation": mitigation
+                })())
+
+        for idx, fm in enumerate(fms, start=1):
+            fmid = f"FM-{idx:03d}"
+            items.append(f"""## {fmid}: {fm.title}
 
 - **Síntoma observable:** {fm.symptom}
 - **Causa raíz técnica (trampa típica de IA):** {fm.root_cause}

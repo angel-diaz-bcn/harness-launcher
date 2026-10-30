@@ -24,22 +24,36 @@ class SDDGenerator:
 
         specs: dict[str, str] = {
             f"1_COMPONENTS/bootstrap/CMP-00-app-bootstrap/CMP-00-app-bootstrap.spec.md": self._cmp_00(folder, ext),
+            f"1_COMPONENTS/bootstrap/CMP-00-app-bootstrap/user_story.md": self._story("arranque de la app", "iniciar la aplicación", "arranque de forma rápida, segura y resiliente"),
             f"1_COMPONENTS/domain/CMP-01-{first_scope}-contract/CMP-01-{first_scope}-contract.spec.md": self._cmp_01(folder, ext, first_scope),
+            f"1_COMPONENTS/domain/CMP-01-{first_scope}-contract/user_story.md": self._story("desarrollador", f"contratos de dominio para {first_scope}", "garantizar inmutabilidad y desacoplamiento"),
             f"1_COMPONENTS/domain/CMP-02-{first_scope}-repository/CMP-02-{first_scope}-repository.spec.md": self._cmp_02(folder, ext, first_scope),
+            f"1_COMPONENTS/domain/CMP-02-{first_scope}-repository/user_story.md": self._story("desarrollador", f"repositorio para {first_scope}", "abstraer el acceso a datos"),
             f"1_COMPONENTS/ui/CMP-03-home-screen/CMP-03-home-screen.spec.md": self._cmp_03(folder, ext),
+            f"1_COMPONENTS/ui/CMP-03-home-screen/user_story.md": self._story("usuario final", "pantalla principal", "navegar por el catálogo de forma accesible"),
             f"2_PROCESSES/app/PRC-01-app-startup/PRC-01-app-startup.spec.md": self._prc_01(),
+            f"2_PROCESSES/app/PRC-01-app-startup/user_story.md": self._story("usuario final", "proceso de arranque coordinado", "acceder al sistema sin inconsistencias de estado"),
         }
         return specs
+
+    def _story(self, role: str, need: str, benefit: str) -> str:
+        return f"""# Historia de Usuario
+
+- **Como:** {role}
+- **Quiero:** {need}
+- **Para:** {benefit}
+"""
 
     def _cmp_00(self, folder: str, ext: str) -> str:
         m = self.manifest
         return f"""---
 spec_id: CMP-00
-spec_type: component
+spec_type: CMP
+layer: bootstrap
 name: app-bootstrap
 target: {folder}/app/bootstrap.{ext}
 block: 1_COMPONENTS
-status: approved
+status: APPROVED
 version: 1.0.0
 owner: arquitecto
 last_reviewed: 2026-10-29
@@ -47,7 +61,7 @@ approved_at: 2026-10-29
 approved_by: arquitecto
 supersedes: null
 superseded_by: null
-user_story: Como usuario, quiero que {m.identity.name} arranque de forma rápida, segura y resiliente.
+user_story: user_story.md
 ---
 
 # CMP-00 — Inicialización y Bootstrap del Sistema
@@ -83,11 +97,12 @@ Define la secuencia de arranque, inyección de dependencias transversal y verifi
         m = self.manifest
         return f"""---
 spec_id: CMP-01
-spec_type: component
+spec_type: CMP
+layer: domain
 name: {scope}-contracts
 target: {folder}/features/{scope}/domain/contracts.{ext}
 block: 1_COMPONENTS
-status: approved
+status: APPROVED
 version: 1.0.0
 owner: arquitecto
 last_reviewed: 2026-10-29
@@ -95,7 +110,7 @@ approved_at: 2026-10-29
 approved_by: arquitecto
 supersedes: null
 superseded_by: null
-user_story: Como desarrollador, quiero contratos de dominio tipados e inmutables para desacoplar la lógica de {scope}.
+user_story: user_story.md
 ---
 
 # CMP-01 — Contratos de Dominio y Entidades de {scope.capitalize()}
@@ -129,11 +144,12 @@ Define las entidades inmutables y las interfaces del dominio para el módulo `{s
         m = self.manifest
         return f"""---
 spec_id: CMP-02
-spec_type: component
+spec_type: CMP
+layer: domain
 name: {scope}-repository
 target: {folder}/features/{scope}/data/{scope}_repository.{ext}
 block: 1_COMPONENTS
-status: approved
+status: APPROVED
 version: 1.0.0
 owner: arquitecto
 last_reviewed: 2026-10-29
@@ -141,7 +157,7 @@ approved_at: 2026-10-29
 approved_by: arquitecto
 supersedes: null
 superseded_by: null
-user_story: Como caso de uso, quiero acceder a datos de {scope} de forma abstracta e independientemente del almacenamiento.
+user_story: user_story.md
 ---
 
 # CMP-02 — Implementación de Repositorio de {scope.capitalize()}
@@ -174,11 +190,12 @@ Implementa el contrato de acceso a datos y persistencia ({m.architecture.persist
         m = self.manifest
         return f"""---
 spec_id: CMP-03
-spec_type: component
+spec_type: CMP
+layer: ui
 name: home-screen
 target: {folder}/features/ui/presentation/home_screen.{ext}
 block: 1_COMPONENTS
-status: approved
+status: APPROVED
 version: 1.0.0
 owner: arquitecto
 last_reviewed: 2026-10-29
@@ -186,7 +203,7 @@ approved_at: 2026-10-29
 approved_by: arquitecto
 supersedes: null
 superseded_by: null
-user_story: Como usuario, quiero acceder a la pantalla principal para navegar fluidamente por {m.identity.name}.
+user_story: user_story.md
 ---
 
 # CMP-03 — Pantalla Principal e Interfaz de Inicio
@@ -219,11 +236,11 @@ Especificación de la vista principal conforme a `design-system/05-pages.md`.
         m = self.manifest
         return f"""---
 spec_id: PRC-01
-spec_type: process
+spec_type: PRC
 name: app-startup-flow
 target: docs/flows/startup_flow.md
 block: 2_PROCESSES
-status: approved
+status: APPROVED
 version: 1.0.0
 owner: arquitecto
 last_reviewed: 2026-10-29
@@ -231,7 +248,7 @@ approved_at: 2026-10-29
 approved_by: arquitecto
 supersedes: null
 superseded_by: null
-user_story: Como sistema, quiero coordinar el flujo de arranque desde el inicio del proceso hasta la primera interacción del usuario.
+user_story: user_story.md
 ---
 
 # PRC-01 — Proceso de Arranque y Coordinación Inicial
