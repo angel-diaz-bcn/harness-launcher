@@ -1,4 +1,9 @@
-# create-process-sdd
+---
+name: create-process-sdd
+description: Crea el esqueleto de una spec de proceso (PRC-NN) a partir de la plantilla canónica .spec.md.
+---
+
+# Create Process SDD
 
 Crea el esqueleto de una spec de proceso (`PRC-NN`) a partir de la plantilla
 canónica.

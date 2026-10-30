@@ -1,9 +1,21 @@
-# launch-app
+---
+name: launch-app
+description: Arranca la aplicación en el entorno, dispositivo o plataforma configurada según el stack del proyecto.
+---
 
-Arranca la aplicación en el dispositivo o plataforma indicada. Requiere un
-proyecto Flutter; en otro stack, este skill no aplica.
+# Launch App
+
+Arranca la aplicación en el dispositivo o plataforma indicada según el stack del proyecto.
 
 ## Comando
+
+```bash
+python .ai-harness/skills/launch-app/runner.py
+```
+
+Comando subyacente configurado en `harness.config.yaml` (`project.launch_command`).
+
+## Opciones avanzadas (para stacks móviles/desktop)
 
 ```bash
 python .ai-harness/skills/launch-app/runner.py --list
@@ -21,13 +33,11 @@ python .ai-harness/skills/launch-app/runner.py --device android --emulator <ID>
 
 ## Qué hace
 
-1. Localiza la raíz del proyecto por su manifiesto.
-2. Comprueba que el SDK del stack está disponible.
-3. Arranca el emulador si se indicó y espera a que esté listo.
-4. Ejecuta la app y reporta el resultado.
+1. Localiza la raíz del proyecto por su manifiesto o configuración.
+2. Ejecuta el comando oficial del proyecto (`launch_command`) o interactúa con el SDK del stack.
+3. Reporta el resultado del arranque.
 
 ## Reglas
 
-- No levanta servicios auxiliares ni backends intermedios.
-- No abre puertos externos.
-- Los endpoints locales que necesite la app los crea la propia app.
+- No levanta servicios auxiliares ni backends no autorizados.
+- No abre puertos externos innecesarios.

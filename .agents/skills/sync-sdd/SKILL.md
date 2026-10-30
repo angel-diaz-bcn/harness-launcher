@@ -1,4 +1,9 @@
-# sync-sdd
+---
+name: sync-sdd
+description: Comprueba que cada spec aprobada (.spec.md), su target y la implementación en disco no divergen.
+---
+
+# Sync SDD
 
 Comprueba que cada spec aprobada, su `target` y la implementación no divergen.
 
@@ -23,7 +28,7 @@ python .ai-harness/skills/sync-sdd/runner.py --json
 ## Cuándo usarla
 
 - Al cerrar una spec (`--baseline` para fijar el punto de partida).
-- Antes de publicar.
+- Antes de publicar en Git.
 - Tras cualquier cambio de comportamiento.
 
 ## Salida
@@ -33,5 +38,5 @@ Código 0 si no hay `DIVERGED`; 1 si hay divergencias. El baseline se guarda en
 
 ## Reglas
 
-- Una divergencia se resuelve actualizando spec o código, no el estado.
-- Una spec sin `user_story.md` es una divergencia, no un aviso.
+- Una divergencia se resuelve actualizando spec o código, no falseando el baseline.
+- Toda spec aprobada debe tener target existente.

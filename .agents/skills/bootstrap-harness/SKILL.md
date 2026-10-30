@@ -1,4 +1,9 @@
-# bootstrap-harness
+---
+name: bootstrap-harness
+description: Inicializa y personaliza todo el arnés de desarrollo asistido por IA para un nuevo proyecto a partir de documentación previa depositada en .ai-harness/input/ o mediante una entrevista guiada por fases.
+---
+
+# Bootstrap Harness
 
 Inicializa y personaliza todo el arnés de desarrollo asistido por IA para un nuevo proyecto a partir de documentación previa depositada en `.ai-harness/input/` o mediante una entrevista guiada por fases.
 
@@ -11,9 +16,10 @@ Transforma la "carcasa" base del arnés en un entorno gobernado a medida del pro
 - Exclusiones específicas del stack tecnológico (`.gitignore` y `.aiignore`).
 - Los 12 documentos normativos de contexto en `.ai-harness/context/`.
 - Scopes funcionales de escritura en `.ai-harness/scopes/`.
-- Semilla de memoria preventiva (mínimo 5 modos de fallo) en `.ai-harness/memory/failure_modes.md` y `ADR-0001`.
-- Sistema de diseño o perfiles de contrato en `.ai-harness/design-system/tokens.json`.
-- Especificación SDD de arranque (`CMP-00-app-bootstrap.spec.md`).
+- Semilla de memoria preventiva (mínimo 5 modos de fallo) en `.ai-harness/memory/failure_modes.md` y `ADR-0001` a `ADR-0003`.
+- Sistema de diseño completo (6 documentos + `tokens.json`).
+- Semilla de especificaciones SDD (`CMP-00` a `CMP-03` y `PRC-01`).
+- Skills documentadas en `.agents/skills/` y workflows en `.clinerules/workflows/`.
 
 ## Comandos
 
@@ -44,4 +50,3 @@ Transforma la "carcasa" base del arnés en un entorno gobernado a medida del pro
 - No deja textos genéricos con etiquetas `<PROYECTO>` huérfanas.
 - `AGENTS.md` se mantiene únicamente como router y orquestador JIT; nunca incluye reglas de implementación ni visuales.
 - Al terminar la generación, el arnés debe quedar en estado `PASSED` en todas las comprobaciones.
-

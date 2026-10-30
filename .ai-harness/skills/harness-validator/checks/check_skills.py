@@ -163,6 +163,42 @@ def run(harness_root: Path, strict: bool = False, fix: bool = False) -> SubCheck
                     severity="ERROR",
                 )
             )
+        else:
+            doc_content = doc_path.read_text(encoding="utf-8", errors="ignore").strip()
+            if not doc_content.startswith("---"):
+                violations.append(
+                    ValidationViolation(
+                        component="skills",
+                        file_path=doc_path,
+                        rule_id="SKILL-DOC-NO-FRONTMATTER",
+                        message=f"Documentation for '{name}' must start with '---' YAML frontmatter.",
+                        severity="ERROR",
+                    )
+                )
+            else:
+                parts = doc_content.split("---", 2)
+                if len(parts) < 3:
+                    violations.append(
+                        ValidationViolation(
+                            component="skills",
+                            file_path=doc_path,
+                            rule_id="SKILL-DOC-INVALID-FRONTMATTER",
+                            message=f"Documentation for '{name}' has unclosed YAML frontmatter.",
+                            severity="ERROR",
+                        )
+                    )
+                else:
+                    fm = _parse_yaml(parts[1])
+                    if not fm.get("name") or not fm.get("description"):
+                        violations.append(
+                            ValidationViolation(
+                                component="skills",
+                                file_path=doc_path,
+                                rule_id="SKILL-DOC-MISSING-FIELDS",
+                                message=f"Documentation frontmatter for '{name}' requires 'name' and 'description'.",
+                                severity="ERROR",
+                            )
+                        )
 
         runner = skill_dir / "runner.py"
         if runner.exists():

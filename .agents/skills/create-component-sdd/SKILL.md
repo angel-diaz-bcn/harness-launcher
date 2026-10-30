@@ -1,4 +1,9 @@
-# create-component-sdd
+---
+name: create-component-sdd
+description: Crea el esqueleto de una spec de componente (CMP-NN) a partir de la plantilla canónica .spec.md.
+---
+
+# Create Component SDD
 
 Crea el esqueleto de una spec de componente (`CMP-NN`) a partir de la plantilla
 canónica.

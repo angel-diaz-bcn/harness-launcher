@@ -1,4 +1,9 @@
-# harness-validator
+---
+name: harness-validator
+description: Valida la estructura y la coherencia del arnés normativo (contexto, scopes, memoria, SDD y skills).
+---
+
+# Harness Validator
 
 Valida la estructura y la coherencia del arnés: contexto, scopes, memoria, SDD
 y skills.
@@ -19,7 +24,7 @@ python .ai-harness/skills/harness-validator/runner.py --json
 - `AGENTS.md` referencia los documentos de gobernanza exigidos.
 - `failure_modes.md` tiene el mínimo de entradas con el prefijo configurado.
 - Cada spec cumple nombre, front matter, estado y trazabilidad.
-- Cada skill tiene manifiesto, runner, documentación y entrada en el registro.
+- Cada skill tiene manifiesto, runner, documentación con frontmatter válido y entrada en el registro.
 
 ## Cuándo usarla
 

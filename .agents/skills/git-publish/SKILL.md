@@ -1,4 +1,9 @@
-# git-publish
+---
+name: git-publish
+description: Publica los cambios en Git solo bajo petición explícita del usuario y tras pasar las puertas de validación.
+---
+
+# Git Publish
 
 Publica los cambios en Git **solo** bajo petición explícita del usuario y tras
 pasar las puertas de validación.
@@ -15,7 +20,7 @@ python .ai-harness/skills/git-publish/runner.py push -m "<mensaje>"
 1. El usuario pide explícitamente publicar, subir o sincronizar.
 2. El runner ejecuta `harness-validator` y `preflight`.
 3. Si cualquiera falla, no se publica: se corrige primero.
-4. Se muestra el resultado del `push`.
+4. Se muestra el resultado del `push` y el enlace al MR/PR.
 
 ## Reglas
 
