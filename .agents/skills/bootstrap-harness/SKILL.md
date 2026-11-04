@@ -1,52 +1,52 @@
 ---
 name: bootstrap-harness
-description: Inicializa y personaliza todo el arnés de desarrollo asistido por IA para un nuevo proyecto a partir de documentación previa depositada en .ai-harness/input/ o mediante una entrevista guiada por fases.
+description: Inicializa y personaliza todo el arnés de desarrollo asistido por IA para un nuevo proyecto a partir de documentación previa depositada en .ai-harness/input/, análisis del codebase o mediante asistencia del modelo de IA.
 ---
 
 # Bootstrap Harness
 
-Inicializa y personaliza todo el arnés de desarrollo asistido por IA para un nuevo proyecto a partir de documentación previa depositada en `.ai-harness/input/` o mediante una entrevista guiada por fases.
+Inicializa y personaliza todo el arnés de desarrollo asistido por IA para un nuevo proyecto a partir de documentación previa (`.ai-harness/input/`), análisis del codebase existente o asistencia directa del modelo de IA.
 
 ## Propósito
 
-Transforma la "carcasa" base del arnés en un entorno gobernado a medida del proyecto, generando de forma atómica:
+Transforma la plantilla neutra en un entorno gobernado de ingeniería adaptado al producto real, generando de forma atómica:
 - Configuración estructural (`harness.config.yaml`).
 - Orquestador de agentes estricto sin reglas de negocio (`AGENTS.md`).
 - Presentación y setup del producto real (`README.md`).
 - Exclusiones específicas del stack tecnológico (`.gitignore` y `.aiignore`).
-- Los 12 documentos normativos de contexto en `.ai-harness/context/`.
-- Scopes funcionales de escritura en `.ai-harness/scopes/`.
-- Semilla de memoria preventiva (mínimo 5 modos de fallo) en `.ai-harness/memory/failure_modes.md` y `ADR-0001` a `ADR-0003`.
-- Sistema de diseño completo (6 documentos + `tokens.json`).
-- Semilla de especificaciones SDD (`CMP-00` a `CMP-03` y `PRC-01`).
+- Los 12 documentos normativos de contexto en `.ai-harness/context/` (adaptados a GUI, Backend API o CLI).
+- Scopes funcionales de escritura en `.ai-harness/scopes/` según los módulos del negocio real.
+- Semilla de memoria preventiva en `.ai-harness/memory/failure_modes.md` y `ADR-0001` a `ADR-0003`.
+- Sistema de diseño completo (6 documentos + `tokens.json`, solo si el producto incluye interfaz gráfica).
+- Semilla canónica SDD (`CMP-00` a `CMP-03` y `PRC-01`).
 - Skills documentadas en `.agents/skills/` y workflows en `.clinerules/workflows/`.
 
-## Comandos
+## Modos de Ejecución
 
-1. **Modo interactivo asistido:**
+### 1. Modo Asistido por IA (Recomendado para Agentes)
+Cuando trabajas con un modelo de IA (Antigravity, Cline, Roo-Code):
+1. Depositar el PRD, brief o arquitectura previa en `.ai-harness/input/` (o explicárselo a la IA en el chat).
+2. El agente analiza el dominio, deduce los módulos reales (`scopes`), el stack y las políticas de persistencia/privacidad.
+3. El agente redacta un manifiesto estructurado (`manifest.yaml`) sin valores hardcodeados ni sesgos.
+4. El agente ejecuta:
    ```bash
-   python .ai-harness/skills/bootstrap-harness/runner.py --interactive
+   python .ai-harness/skills/bootstrap-harness/runner.py --manifest .ai-harness/input/manifest.yaml
    ```
 
-2. **Modo simulación (sin escribir archivos):**
-   ```bash
-   python .ai-harness/skills/bootstrap-harness/runner.py --interactive --dry-run
-   ```
+### 2. Modo Interactivo por Consola
+Para desarrolladores humanos respondiendo pregunta por pregunta en terminal:
+```bash
+python .ai-harness/skills/bootstrap-harness/runner.py --interactive
+```
 
-3. **Modo manifiesto (ejecución desatendida a partir de un YAML preparado):**
-   ```bash
-   python .ai-harness/skills/bootstrap-harness/runner.py --manifest ruta/al/manifiesto.yaml
-   ```
+### 3. Modo Simulación (Dry-Run)
+Prueba la generación sin escribir archivos en disco:
+```bash
+python .ai-harness/skills/bootstrap-harness/runner.py --interactive --dry-run
+```
 
-## Protocolo
+## Protocolo de Gobernanza
 
-1. Si existe documentación previa, colocarla en `.ai-harness/input/`.
-2. Ejecutar el runner o invocar `/bootstrap-harness.md`.
-3. Responder las preguntas guiadas. En cada una es posible elegir una opción recomendada, solicitar *"🤖 Decidir por mí"* para que la IA aplique las mejores prácticas según el contexto, o escribir en *"✏️ Campo abierto"*.
-4. Al concluir, el runner compila los archivos y ejecuta de inmediato las puertas de enlace (`harness-validator`, `preflight` y `sync-sdd`) para verificar la integridad del arnés.
-
-## Reglas de Gobernanza
-
-- No deja textos genéricos con etiquetas `<PROYECTO>` huérfanas.
-- `AGENTS.md` se mantiene únicamente como router y orquestador JIT; nunca incluye reglas de implementación ni visuales.
-- Al terminar la generación, el arnés debe quedar en estado `PASSED` en todas las comprobaciones.
+- No deja textos genéricos con etiquetas `<PROYECTO>` ni valores literales.
+- Si el producto es un backend o CLI, no fuerza tokens de color ni navegación por D-Pad.
+- Al concluir, el runner ejecuta automáticamente `harness-validator` para verificar que el arnés queda 100% en verde.

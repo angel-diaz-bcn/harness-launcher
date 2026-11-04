@@ -30,17 +30,25 @@ python .ai-harness/skills/create-component-sdd/runner.py CMP-01 \
 
 ## Qué genera
 
-- `<ID>-<slug>.spec.md` con el front matter de la plantilla sustituido.
-- `user_story.md` con la estructura de historia de usuario.
+- `<ID>-<slug>.spec.md` con la plantilla canónica exhaustiva de 15 secciones (Protocolo, Problema, Requisitos `FR-*`, Reglas `BR-*`, Estados y Errores, Contratos `CT-*`, Trazabilidad §10, Pruebas `TC-*` y BDD).
+- `user_story.md` con la historia de usuario estructurada: Resumen Ejecutivo, Problema, Actores primarios y secundarios, Historia formal, Criterios BDD (Escenario de éxito y de contingencia) y Fuera de alcance.
 
-## Después de ejecutarla
+## Flujo de trabajo para redactar la especificación
 
-1. Completar front matter y todas las secciones obligatorias.
-2. Definir `FR-*`, `CT-*` y `TC-*`.
-3. Rellenar el mapa de implementación con rutas y símbolos reales.
-4. Cambiar a `APPROVED` solo con el checklist completo.
+Para evitar specs incompletas o superficiales, sigue este protocolo estricto:
+
+1. **Definir la Historia de Usuario (`user_story.md`):** Explicar el valor de negocio real y al menos 2 criterios de aceptación en formato BDD (`Dado / Cuando / Entonces`).
+2. **Requisitos Funcionales (§4):** Listar requisitos atómicos `FR-01`, `FR-02`, etc., con prioridad MoSCoW (`Must`, `Should`).
+3. **Reglas de Negocio (§5):** Declarar invariantes `BR-*` e `INV-*` con su fuente canónica.
+4. **Estados y Errores (§6):** Diagramar la máquina de estados en Mermaid y catalogar los errores con códigos tipados.
+5. **UI y Foco (§7, si es capa `ui`):** Referenciar tokens de `tokens.json` y orden de foco por teclado/D-Pad. En otras capas indicar "No aplica".
+6. **Contratos de Datos (§8):** Escribir los tipos, clases inmutables e interfaces `CT-*` exactas.
+7. **Mapa de Implementación (§10):** Mapear cada fila `FR` → `CT` → `archivo::símbolo` → `TC` con estado `Pending`.
+8. **Pruebas (§11 y §12):** Detallar los casos de prueba unitarios/integración `TC-*` y escenarios Gherkin.
+9. **Aprobación:** Solo cuando todo esté completo y sin placeholders `<...>`, cambiar `status: DRAFT` a `status: APPROVED` asignando `approved_at` y `approved_by`.
 
 ## Reglas
 
+- SDD-First: Prohibido escribir código en `lib/` o `src/` sin que la spec esté en estado `APPROVED`.
 - No inventa identificadores ni capas: los lee de `harness.config.yaml`.
 - No sobrescribe sin `--force`.

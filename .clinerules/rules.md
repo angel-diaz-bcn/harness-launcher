@@ -1,55 +1,62 @@
 # Reglas de integración del agente con el arnés
 
-## 1. Autoridad
+## 1. Autoridad y Jerarquía
+`AGENTS.md` es el enrutador maestro del repositorio. El agente no puede
+contradecir, omitir ni relajar las reglas de `AGENTS.md`, del contexto normativo
+ni de los scopes activos.
 
-`AGENTS.md` es el enrutador operativo del repositorio. El agente no puede
-contradecir, omitir ni relajar las reglas de `AGENTS.md`, del contexto ni de los
-scopes activos.
+---
 
 ## 2. Modus operandi
 
-- Antes de leer código o proponer cambios, ejecutar la carga JIT de `AGENTS.md` §1.
-- Identificar el scope de la tarea y no escribir fuera de sus rutas autorizadas.
-- No implementar sin spec `.spec.md` aprobada.
-- Si falta información, detenerse y preguntar; no inventar contratos, campos,
-  estados ni dependencias.
-- Si la tarea cambia la estructura del arnés, empezar por `harness.config.yaml`.
+1. **Carga JIT obligatoria:** Antes de leer código o proponer cambios, ejecutar en orden estricto la secuencia de lectura de `AGENTS.md` §1.
+2. **Fronteras de Escritura:** Identificar el scope correspondiente en `.ai-harness/scopes/block_*.md` y escribir **exclusivamente** dentro de sus rutas autorizadas.
+3. **SDD-First estricto:** Prohibido implementar código de producción sin una spec `.spec.md` en estado `APPROVED`.
+4. **Cero asunciones:** Si falta un dato o requerimiento, registrarlo como pregunta abierta en §15/§16 y detener la implementación hasta aclararlo.
+5. **Cambios estructurales:** Si la tarea modifica la estructura del arnés (scopes, prefijos o reglas), empezar siempre por `harness.config.yaml`.
+
+---
 
 ## 3. Despacho de workflows
 
 El agente descubre los workflows en `.clinerules/workflows/`. El comando del
-menú `/` es el nombre del archivo, incluida la extensión `.md`.
+menú `/` es el nombre del archivo, incluida la extensión `.md`:
 
-- Descubrimiento de herramientas: `.clinerules/workflows/list-skills.md`.
-- Creación de especificaciones: `create-component-sdd.md` y `create-process-sdd.md`.
-- Validación del arnés: `harness-validator.md`.
-- Sincronización spec↔código: `sync-sdd.md`.
-- Validación de producto: `preflight.md`.
-- Arranque de la app: `launch-app.md`.
-- Publicación Git: `git-publish.md`, solo bajo petición explícita.
+- `/list-skills.md`: Descubrimiento e inventario de herramientas.
+- `/create-component-sdd.md`: Andamiaje para nuevos componentes.
+- `/create-process-sdd.md`: Andamiaje para flujos y procesos.
+- `/harness-validator.md`: Validación de integridad normativa del arnés.
+- `/sync-sdd.md`: Sincronización criptográfica entre specs y código.
+- `/preflight.md`: Puerta de calidad de arquitectura y código.
+- `/launch-app.md`: Arranque de la aplicación localmente.
+- `/git-publish.md`: Publicación segura en Git (solo bajo demanda explícita).
 
-## 4. Terminal y salida
+---
+
+## 4. Terminal, herramientas y salida
 
 - Ejecutar comandos atómicos y no interactivos.
 - No encadenar diagnósticos largos en una sola orden salvo error explícito.
-- No volcar trazas completas; resumir el resultado.
-- Usar las herramientas nativas de lectura y edición de archivos.
-- No usar paginadores interactivos ni redirecciones innecesarias.
+- No volcar trazas completas innecesariamente; resumir el resultado para mantener limpio el contexto.
+- Usar las herramientas nativas del entorno para lectura y edición de archivos.
+- No usar paginadores interactivos (`less`, `more`) ni redirecciones complejas innecesarias.
 
-## 5. Pruebas y corrección
+---
+
+## 5. Pruebas, diagnóstico y corrección autónoma
 
 - Ejecutar los tests de forma atómica y con salida acotada.
-- Si un comando falla, leer el archivo señalado por el stack trace antes de
-  proponer una corrección.
-- Diagnosticar la causa raíz, editar y volver a verificar sin pedir asistencia
-  manual.
-- Iterar hasta que la suite pase o se alcance un límite evidente y se explique.
+- Si un comando o validador falla, leer el archivo señalado por la traza antes de proponer una corrección.
+- Diagnosticar la causa raíz, editar y volver a verificar sin pedir asistencia manual innecesaria.
+- Iterar hasta que la suite pase o se alcance un límite arquitectónico evidente y se justifique.
 
-## 6. Prohibiciones
+---
 
-- Backend, proxy remoto o servicios que la arquitectura no declara.
-- Telemetría de usuario, analítica remota o publicidad.
-- `git push` o publicación automática sin instrucción explícita.
-- Colores o estilos fuera de `ui-design-system.md`.
-- Código de producción sin spec aprobada.
-- Desactivar un validador para hacer pasar un cambio.
+## 6. Prohibiciones no negociables
+
+- Prohibido código de producción sin spec aprobada.
+- Prohibido el uso de librerías de backend, proxy remoto o servicios que la arquitectura no declara.
+- Prohibida la telemetría de usuario, tracking de eventos o analítica invasiva.
+- Prohibido ejecutar `git push` o publicación remota sin instrucción explícita del usuario.
+- Prohibido el uso de colores HEX o estilos visuales literales fuera de `design-system/tokens.json`.
+- Prohibido desactivar o puentear validadores (`--no-verify`) para hacer pasar un cambio.
