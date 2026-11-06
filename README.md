@@ -155,7 +155,7 @@ El repositorio distingue claramente dos zonas:
 
 ## 🎬 Ejemplo práctico paso a paso (De la idea a producción)
 
-> 📖 **Capítulo de referencia completa:** [docs/13-ejemplo-practico-paso-a-paso.md](file:///c:/Users/angel/Documents/DEV/harness-launcher/docs/13-ejemplo-practico-paso-a-paso.md)
+> 📖 **Capítulo de referencia completa:** [docs/13-ejemplo-practico-paso-a-paso.md](docs/13-ejemplo-practico-paso-a-paso.md)
 
 ¿Cómo se vive en el día a día un desarrollo con este arnés?
 
@@ -173,11 +173,11 @@ El repositorio distingue claramente dos zonas:
 
 Si deseas comprender la ingeniería detrás de un arnés de IA gobernado:
 
-1. Abre [`docs/00-indice.md`](file:///c:/Users/angel/Documents/DEV/harness-launcher/docs/00-indice.md) y elige tu itinerario:
+1. Abre [`docs/00-indice.md`](docs/00-indice.md) y elige tu itinerario:
    - **Ruta corta (30 min):** `01-que-es-un-harness.md` → `02-agents-md.md` → `cheatsheet.md`.
    - **Ruta operativa (2 horas):** `01` a `05` → `08-skills-y-validadores.md` → `13-ejemplo-practico-paso-a-paso.md` → `cheatsheet.md`.
    - **Ruta completa (4 horas):** Los 14 capítulos (00 a 13) en orden para dominar la arquitectura OpenSpec y gobernanza de agentes.
-2. Consulta el **caso práctico real** en [`docs/13-ejemplo-practico-paso-a-paso.md`](file:///c:/Users/angel/Documents/DEV/harness-launcher/docs/13-ejemplo-practico-paso-a-paso.md).
+2. Consulta el **caso práctico real** en [`docs/13-ejemplo-practico-paso-a-paso.md`](docs/13-ejemplo-practico-paso-a-paso.md).
 3. Examina las plantillas canónicas en `.ai-harness/sdd/templates/` para entender la anatomía de una especificación viva y un delta de propuesta.
 
 ---

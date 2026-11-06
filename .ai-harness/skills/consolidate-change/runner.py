@@ -27,7 +27,8 @@ def main() -> None:
 
     target_change = None
     if args.change_id:
-        candidate = changes_dir / args.change_id
+        clean_id = Path(args.change_id).name
+        candidate = changes_dir / clean_id
         if candidate.is_dir():
             target_change = candidate
     else:

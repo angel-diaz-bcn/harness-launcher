@@ -76,5 +76,5 @@ Las PRs/MRs que alteren los árbitros sin justificación arquitectónica documen
 
 ## 📜 Licencia
 
-Al contribuir a este repositorio, aceptas que tus contribuciones se publicarán bajo los términos de la **Licencia MIT** incluida en el archivo [LICENSE](file:///c:/Users/angel/Documents/DEV/harness-launcher/LICENSE).
+Al contribuir a este repositorio, aceptas que tus contribuciones se publicarán bajo los términos de la **Licencia MIT** incluida en el archivo [LICENSE](LICENSE).
 

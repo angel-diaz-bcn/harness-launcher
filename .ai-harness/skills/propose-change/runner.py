@@ -29,8 +29,9 @@ def main() -> None:
     templates_dir = sdd_dir / "templates"
     changes_dir = sdd_dir / "changes"
 
+    import re
     date_prefix = datetime.now().strftime("%Y-%m")
-    clean_slug = args.slug.strip().lower().replace("_", "-").replace(" ", "-")
+    clean_slug = re.sub(r"[^a-zA-Z0-9_-]", "-", args.slug.strip().lower()).strip("-")
     change_folder_name = f"{date_prefix}-{clean_slug}"
     target_change_dir = changes_dir / change_folder_name
 

@@ -410,7 +410,7 @@ Thumbs.db
 *.swo
 
 # --- Caché del Arnés y Herramientas ---
-.spectra/
+.tools/
 *.log
 replay_pid*
 coverage/
@@ -424,7 +424,7 @@ coverage/
 # .aiignore — Exclusiones de contexto para agentes de IA
 # =============================================================================
 .git/
-.spectra/
+.tools/
 node_modules/
 .venv/
 venv/
@@ -640,7 +640,7 @@ python .ai-harness/skills/sync-sdd/runner.py
 
 ## 4. Flujo de Trabajo para Agentes de IA
 
-Cualquier agente de IA que colabore en este repositorio debe comenzar leyendo obligatoriamente [`AGENTS.md`](file:///./AGENTS.md) y ejecutar la carga JIT en el orden exacto indicado antes de inspeccionar o modificar código.
+Cualquier agente de IA que colabore en este repositorio debe comenzar leyendo obligatoriamente [`AGENTS.md`](AGENTS.md) y ejecutar la carga JIT en el orden exacto indicado antes de inspeccionar o modificar código.
 """
         self._write(self.workspace_root / "README.md", content)
 
