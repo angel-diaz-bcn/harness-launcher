@@ -43,7 +43,8 @@ proyecto nuevo, se copia **solo** la sección 1.
 | Ruta | Motivo |
 |---|---|
 | `docs/` | Documentación explicativa de la formación |
-| `README.md` | Presentación de esta plantilla |
+| `README.md` | Presentación de esta plantilla (Español) |
+| `README.en.md` | Presentación de esta plantilla (Inglés) |
 | `MANIFEST.md` | Este archivo |
 | `.ai-harness/memory/ephemeral_feedback/*` | Logs locales de ejecución |
 | `.ai-harness/memory/sync-state.json` | Baseline generada por `sync-sdd` |

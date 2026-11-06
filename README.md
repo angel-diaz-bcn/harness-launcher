@@ -6,6 +6,8 @@
 [![Methodology](https://img.shields.io/badge/Methodology-OpenSpec-purple)](docs/05-sdd.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+**Español** | [English](README.en.md)
+
 > **Entorno de desarrollo asistido por IA gobernado, determinista y auditable.**  
 > Este repositorio cumple una **doble función**: es una **guía didáctica y de referencia canónica** sobre cómo diseñar y gobernar un arnés de IA profesional, y al mismo tiempo es una **herramienta generadora (launcher)** capaz de montar un arnés a medida para cualquier stack y producto real mediante la skill `bootstrap-harness`.
 
