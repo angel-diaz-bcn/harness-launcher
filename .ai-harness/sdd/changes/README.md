@@ -9,3 +9,4 @@ Este directorio contiene las propuestas de cambio activas del proyecto.
    - `proposal.md`: Justificación, contratos y especificación delta (`+`, `~`, `-`).
    - `tasks.md`: Lista de tareas pendientes y completadas (`- [ ]`, `- [x]`).
 3. **Consolidación:** Una vez implementadas y verificadas todas las tareas, el cambio se consolida en el módulo correspondiente de `modules/` y se traslada a `archive/` mediante `/consolidate-change`.
+
