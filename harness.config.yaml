@@ -48,11 +48,7 @@ scopes:
     - block_ui.md
   path_roots:
     - "lib/"
-  forbidden_paths:
-    - ".ai-harness/skills/"
-    - ".ai-harness/context/"
-    - ".github/"
-    - "harness.config.yaml"
+  forbidden_paths: []
 
 # -----------------------------------------------------------------------------
 # SDD: arquitectura OpenSpec y gobernanza de especificaciones

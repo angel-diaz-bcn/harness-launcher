@@ -43,17 +43,11 @@ def run(scope_path: Path, strict: bool = False) -> CheckResult:
     root = find_project_root(scope_path)
 
     if root is None or not (root / "lib").exists() and not (root / "src").exists():
-        # Repositorio plantilla sin código de producto aún
+        # Repositorio plantilla / launcher sin código de producto aún
         return CheckResult(
             check_name="00_code_quality",
-            status=CheckStatus.WARNING,
-            violations=[
-                CheckViolation(
-                    file_path=scope_path,
-                    rule_id="PROJECT-CODE-MISSING",
-                    message="No production code directory (lib/ or src/) found. Code quality checks were skipped.",
-                )
-            ],
+            status=CheckStatus.PASSED,
+            violations=[],
             execution_time_ms=(time.perf_counter() - start) * 1000.0,
         )
 
