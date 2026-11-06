@@ -121,9 +121,9 @@ humana. Un validador debe poder fallar.
 | `bootstrap-harness` | La configuración o los archivos generados no superan harness-validator |
 | `harness-validator` | Falta estructura, contenido, front matter o registro |
 | `preflight` | Hay violaciones de código, arquitectura, tokens o dependencias |
-| `sync-sdd` | Una spec aprobada diverge de su implementación |
-| `create-component-sdd` | El identificador, la capa o el target no son válidos |
-| `create-process-sdd` | El identificador, el target o la plantilla no son válidos |
+| `sync-sdd` | Un módulo vivo diverge del código o hay tareas pendientes en changes |
+| `propose-change` | La propuesta no respeta el esquema de delta OpenSpec |
+| `consolidate-change` | La propuesta no existe o no puede trasladarse a archive |
 | `launch-app` | El proyecto o el dispositivo no están disponibles |
 | `git-publish` | Alguna puerta falla o no hay instrucción explícita |
 

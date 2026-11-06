@@ -22,19 +22,19 @@ skills:
     status: active
     command: python .ai-harness/skills/sync-sdd/runner.py
     doc: .agents/skills/sync-sdd/SKILL.md
-    description: Comprueba la sincronización entre specs .spec.md y código.
+    description: Audita la sincronización entre módulos OpenSpec, tareas activas y código.
 
-  - name: create-component-sdd
+  - name: propose-change
     status: active
-    command: python .ai-harness/skills/create-component-sdd/runner.py
-    doc: .agents/skills/create-component-sdd/SKILL.md
-    description: Crea el esqueleto de una spec de componente CMP-NN.
+    command: python .ai-harness/skills/propose-change/runner.py
+    doc: .agents/skills/propose-change/SKILL.md
+    description: Crea una propuesta de cambio aislada (delta OpenSpec) en changes/ para su revisión rápida.
 
-  - name: create-process-sdd
+  - name: consolidate-change
     status: active
-    command: python .ai-harness/skills/create-process-sdd/runner.py
-    doc: .agents/skills/create-process-sdd/SKILL.md
-    description: Crea el esqueleto de una spec de proceso PRC.
+    command: python .ai-harness/skills/consolidate-change/runner.py
+    doc: .agents/skills/consolidate-change/SKILL.md
+    description: Aplica una propuesta aprobada sobre el módulo maestro y la archiva en archive/.
 
   - name: launch-app
     status: active

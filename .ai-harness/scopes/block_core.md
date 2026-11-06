@@ -46,6 +46,7 @@ lib/core/
 ```
 
 Prohibido escribir en `lib/features/*` o `lib/app/`.
+Prohibido modificar archivos del arnés o CI: `.ai-harness/skills/`, `.ai-harness/context/`, `harness.config.yaml`, `.github/`.
 
 ## Comprobaciones
 

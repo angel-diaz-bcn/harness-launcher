@@ -50,6 +50,7 @@ lib/features/<feature>/
 ```
 
 Prohibido escribir en `lib/app/` y en `lib/features/*/presentation/`.
+Prohibido modificar archivos del arnés o CI: `.ai-harness/skills/`, `.ai-harness/context/`, `harness.config.yaml`, `.github/`.
 
 ## Comprobaciones
 

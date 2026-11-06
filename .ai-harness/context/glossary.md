@@ -12,26 +12,28 @@ cada palabra con significado de negocio o de arquitectura se define aquí.
 | **Arnés** | Conjunto de reglas, contexto, specs, memoria y validadores que restringen y guían el trabajo del agente |
 | **Contexto** | Documento normativo de `context/`; es la verdad del sistema |
 | **Scope** | Límite de escritura de un bloque: qué rutas puede tocar y cuáles no |
-| **Spec** | Contrato técnico en `<ID>-<slug>.spec.md` con front matter y trazabilidad |
-| **Historia de usuario** | Brief de producto (`user_story.md`); responde al porqué |
+| **Spec (Módulo)** | Especificación técnica viva de un módulo (`modules/<slug>.md`) o delta de propuesta (`changes/<id>/proposal.md`) |
+| **Delta (Propuesta)** | Propuesta de cambio aislada en `changes/` con `proposal.md` y lista de tareas `tasks.md` |
+| **Fast-Path** | Procedimiento ágil para parches y bugfixes menores (<3 archivos) sin spec previa |
 | **Trazabilidad** | Cadena `FR/ST → CT → archivo::símbolo → TC` que une requisito, contrato, código y prueba |
 | **Modo de fallo** | Error recurrente documentado con síntoma, riesgo, prevención y verificación |
 | **ADR** | Registro inmutable de una decisión de arquitectura |
 | **Skill** | Herramienta ejecutable del arnés con manifiesto, runner y documentación |
 | **Puerta de validación** | Validador que debe pasar para cerrar un cambio |
 
-## 2. Términos de SDD
+## 2. Términos de OpenSpec y SDD
 
 | Término | Definición |
 |---|---|
-| `CMP-NN` | Identificador de componente |
-| `PRC-NN` | Identificador de proceso |
-| `FR-NN` | Requisito funcional de un componente |
-| `ST-NN` | Paso observable de un proceso |
+| `MOD-slug` | Identificador de módulo vivo consolidado en `modules/` |
+| `proposal.md` | Documento que detalla el delta de lo que añade (+), modifica (~) o depreca (-) un cambio |
+| `tasks.md` | Checklist técnico ejecutable asociado a una propuesta |
+| `FR-NN` | Requisito funcional de una capacidad o módulo |
+| `ST-NN` | Paso observable de un flujo o secuencia |
 | `BR-NN` | Regla de negocio |
 | `INV-NN` | Invariante que nunca puede violarse |
-| `CT-NN` | Contrato de datos |
-| `TC-NN` | Caso de prueba |
+| `CT-NN` | Contrato de datos e interfaz pública |
+| `TC-NN` | Caso de prueba unitaria o de integración |
 | `AC-NN` | Criterio de aceptación |
 | `US-NN` | Criterio de negocio de la historia de usuario |
 | `DRAFT` | Spec en elaboración; no se implementa |

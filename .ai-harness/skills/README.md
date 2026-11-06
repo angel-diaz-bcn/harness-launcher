@@ -9,9 +9,9 @@ inventario es `registry.yaml`.
 |---|---|
 | `harness-validator` | Valida contexto, scopes, memoria, SDD y skills |
 | `preflight` | Valida código, arquitectura, contratos, tokens y dependencias |
-| `sync-sdd` | Comprueba spec ↔ target ↔ implementación |
-| `create-component-sdd` | Crea el esqueleto de un componente |
-| `create-process-sdd` | Crea el esqueleto de un proceso |
+| `sync-sdd` | Audita módulos vivos y tareas OpenSpec |
+| `propose-change` | Crea una propuesta de cambio (delta OpenSpec) |
+| `consolidate-change` | Consolida y archiva un cambio aprobado |
 | `launch-app` | Arranca la app (stack Flutter) |
 | `git-publish` | Publica en Git bajo demanda explícita |
 

@@ -43,7 +43,7 @@ La lista es configurable en `context.required` de `harness.config.yaml`.
 ### Jerarquía de verdad
 
 ```
-context/ y scopes/  →  spec aprobada  →  contratos y código  →  documentación auxiliar
+context/ y scopes/  →  módulo vivo y propuesta aprobada  →  contratos y código  →  documentación auxiliar
 ```
 
 La contradicción se resuelve hacia arriba, nunca inventando una tercera regla.

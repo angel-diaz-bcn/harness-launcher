@@ -53,7 +53,7 @@ matter, prefijo de modos de fallo y perfiles de invariantes.
 5. `ui-design-system.md` y `design-system/README.md`
 6. `scopes/block_<área>.md`
 7. `sdd_framework.md`
-8. La spec `.spec.md` activa
+8. El módulo vivo `.ai-harness/sdd/modules/<modulo>.md` y la propuesta en `changes/` activa, si existe
 9. `memory/failure_modes.md`
 
 Si falta cualquier pieza para la tarea, el agente se detiene y lo dice.
@@ -61,18 +61,18 @@ Si falta cualquier pieza para la tarea, el agente se detiene y lo dice.
 ## 5. Jerarquía de verdad
 
 1. `context/` y `scopes/`.
-2. Spec `.spec.md` aprobada.
+2. Módulo vivo consolidado en `modules/` y propuesta activa en `changes/`.
 3. Contratos y código.
 4. Documentación auxiliar.
 
-Si el código contradice la spec, el código está mal. Si la spec contradice el
-contexto, la spec está mal. La contradicción no se resuelve inventando una
+Si el código contradice la spec del módulo, el código está mal. Si el módulo contradice el
+contexto, el módulo está mal. La contradicción no se resuelve inventando una
 tercera regla.
 
 ## 6. Convenciones de nombre
 
-- Specs: `<ID>-<slug>.spec.md`.
-- Componentes: `CMP-NN`. Procesos: `PRC-NN`.
+- Módulos vivos: `MOD-<slug>` en `.ai-harness/sdd/modules/<slug>.md`.
+- Propuestas de cambio: `[YYYY-MM]-<slug>` en `.ai-harness/sdd/changes/`.
 - Scopes: `block_<área>.md`.
 - Skills: `<nombre>/skill.yaml`, `<nombre>/runner.py`, `.agents/skills/<nombre>/SKILL.md`.
 - Modos de fallo: `<prefijo>-NNN`, con el prefijo declarado en la configuración.
@@ -97,7 +97,7 @@ externos no declarados.
 |---|---|---|
 | `harness-validator` | Estructura del arnés: contexto, scopes, memoria, SDD, skills | Antes de cerrar cualquier cambio |
 | `preflight` | Código, arquitectura, contratos, tokens y dependencias | Antes de cerrar cambios de producto |
-| `sync-sdd` | Spec ↔ target ↔ implementación | Antes de publicar o cerrar una spec |
+| `sync-sdd` | Módulo vivo ↔ target ↔ tareas completadas en changes/ | Antes de publicar o cerrar un cambio |
 | `git-publish` | Ambas puertas antes de publicar | Solo bajo petición explícita |
 
 Un fallo de validación no se ignora ni se desactiva: se corrige la causa raíz.
@@ -114,8 +114,7 @@ Un fallo de validación no se ignora ni se desactiva: se corrige la causa raíz.
 
 - Toda regla nueva se añade a `context/` o a un scope, no a `AGENTS.md`.
 - Toda skill nueva se registra en `skills/registry.yaml`.
-- Toda spec conserva su historial; no se borra al implementarse.
-- Una spec reemplazada se marca `SUPERSEDED` y apunta a su reemplazo.
+- Todo cambio se consolida en el módulo maestro de `modules/` y se archiva en `archive/`.
 - Toda skill obsoleta se marca `deprecated` y se retira tras migrar sus referencias.
 - Prohibido dejar directorios vacíos, archivos huérfanos o documentación de otro
   proyecto.
@@ -125,10 +124,11 @@ Un fallo de validación no se ignora ni se desactiva: se corrige la causa raíz.
 
 - [ ] `harness-validator` devuelve exit code 0.
 - [ ] `preflight` devuelve exit code 0 o un warning justificado.
-- [ ] `sync-sdd` reporta `N/A`, `MISSING`, `PRESENT` o `DIVERGED` de forma explícita.
+- [ ] `sync-sdd` audita módulos vivos y tareas en curso sin divergencias.
 - [ ] Cada skill tiene manifiesto, runner, documentación y registro.
-- [ ] Cada scope apunta a una ruta existente declarada en la configuración.
-- [ ] Cada spec tiene `user_story.md`, `.spec.md`, `target` y mapa de implementación.
+- [ ] Cada scope apunta a una ruta existente declarada en la configuración y declara rutas prohibidas.
+- [ ] Cada módulo vivo en `modules/` tiene `module_id`, `target_path`, `scope` y `Mapa de implementación`.
+- [ ] Las propuestas en curso tienen `proposal.md` y `tasks.md` sin tareas incompletas al cerrar.
 - [ ] No hay referencias al proyecto anterior ni a sus tecnologías.
 - [ ] No hay dos fuentes de verdad para la misma regla.
 

@@ -48,38 +48,39 @@ scopes:
     - block_ui.md
   path_roots:
     - "lib/"
-  forbidden_paths: []
+  forbidden_paths:
+    - ".ai-harness/skills/"
+    - ".ai-harness/context/"
+    - ".github/"
+    - "harness.config.yaml"
 
 # -----------------------------------------------------------------------------
-# SDD: convención de identificadores y front matter obligatorio
+# SDD: arquitectura OpenSpec y gobernanza de especificaciones
 # -----------------------------------------------------------------------------
 sdd:
-  component_prefix: CMP
-  process_prefix: PRC
-  component_layers:
-    - bootstrap
-    - domain
-    - ui
+  engine: openspec
+  paths:
+    modules: ".ai-harness/sdd/modules"
+    changes: ".ai-harness/sdd/changes"
+    archive: ".ai-harness/sdd/archive"
+    templates: ".ai-harness/sdd/templates"
   blocks:
-    - 1_COMPONENTS
-    - 2_PROCESSES
+    - modules
+    - changes
+    - archive
     - templates
   implementation_map_heading: "Mapa de implementación"
-  frontmatter:
-    - spec_id
-    - spec_type
-    - name
-    - target
-    - block
-    - status
-    - version
-    - owner
-    - last_reviewed
-    - approved_at
-    - approved_by
-    - supersedes
-    - superseded_by
-    - user_story
+  tiers:
+    fast_path:
+      enabled: true
+      max_files_changed: 3
+      require_tests: true
+    standard:
+      require_proposal: true
+      require_tasks_complete: true
+    core:
+      require_proposal: true
+      require_adr: true
 
 # -----------------------------------------------------------------------------
 # Memoria: prefijo de los modos de fallo y mínimo exigido

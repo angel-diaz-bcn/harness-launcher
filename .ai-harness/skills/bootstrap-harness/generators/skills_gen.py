@@ -36,9 +36,9 @@ Cada skill cuenta con su especificación canónica en `SKILL.md` y su runner eje
 |---|---|---|
 | `harness-validator` | Valida integridad estructural, frontmatter, contexto y scopes | `python .ai-harness/skills/harness-validator/runner.py` |
 | `preflight` | Valida código ({m.stack.language}), arquitectura, inmutabilidad y tokens | `python .ai-harness/skills/preflight/runner.py` |
-| `sync-sdd` | Comprueba paridad entre specs aprobadas y código real en disco | `python .ai-harness/skills/sync-sdd/runner.py` |
-| `create-component-sdd` | Crea el esqueleto canónico de componente CMP-NN | `python .ai-harness/skills/create-component-sdd/runner.py` |
-| `create-process-sdd` | Crea el esqueleto canónico de proceso PRC-NN | `python .ai-harness/skills/create-process-sdd/runner.py` |
+| `sync-sdd` | Comprueba paridad entre módulos OpenSpec, tareas activas y código real | `python .ai-harness/skills/sync-sdd/runner.py` |
+| `propose-change` | Crea una propuesta de cambio aislada (delta OpenSpec) en changes/ | `python .ai-harness/skills/propose-change/runner.py` |
+| `consolidate-change` | Aplica una propuesta aprobada sobre el módulo maestro y la archiva | `python .ai-harness/skills/consolidate-change/runner.py` |
 | `launch-app` | Arranca la aplicación en el entorno configurado | `python .ai-harness/skills/launch-app/runner.py` |
 | `git-publish` | Publicación gobernada en Git bajo demanda explícita | `python .ai-harness/skills/git-publish/runner.py` |
 """
@@ -142,68 +142,38 @@ python .ai-harness/skills/sync-sdd/runner.py --baseline
 - **N/A:** Specs en borrador (`DRAFT`) que aún no exigen código de producción.
 """
 
-        # 5. create-component-sdd/SKILL.md
-        out["create-component-sdd/SKILL.md"] = f"""---
-name: create-component-sdd
-description: Genera el andamiaje canónico de una spec de componente (CMP-NN) para {m.identity.name}.
+        # 5. propose-change/SKILL.md
+        out["propose-change/SKILL.md"] = f"""---
+name: propose-change
+description: Crea una propuesta de cambio aislada (delta OpenSpec) en .ai-harness/sdd/changes/ para {m.identity.name}.
 ---
 
-# Create Component SDD
+# Propose Change
 
-Genera una nueva especificación técnica de componente en `.ai-harness/sdd/1_COMPONENTS/`.
+Inicia una nueva propuesta de cambio según la metodología OpenSpec para su revisión en 2 minutos antes de codificar.
 
 ## Comandos
 
 ```bash
-python .ai-harness/skills/create-component-sdd/runner.py CMP-NN \\
-  --name "<Nombre legible>" \\
-  --target {root_path}<ruta>/<archivo> \\
-  --layer <bootstrap|domain|ui> \\
-  --dir .ai-harness/sdd/1_COMPONENTS/<layer>/CMP-NN-<slug>
+python .ai-harness/skills/propose-change/runner.py <slug> --module <MOD-id> --title "<Título del cambio>"
 ```
-
-## Flujo de trabajo para redactar la especificación
-
-1. **Definir la Historia de Usuario (`user_story.md`):** Explicar el valor de negocio real y al menos 2 criterios de aceptación en formato BDD (`Dado / Cuando / Entonces`).
-2. **Requisitos Funcionales (§4):** Listar requisitos atómicos `FR-01`, `FR-02`, etc., con prioridad MoSCoW (`Must`, `Should`).
-3. **Reglas de Negocio (§5):** Declarar invariantes `BR-*` e `INV-*` con su fuente canónica.
-4. **Estados y Errores (§6):** Diagramar la máquina de estados en Mermaid y catalogar los errores con códigos tipados.
-5. **UI y Foco (§7, si es capa `ui`):** Referenciar tokens de `tokens.json` y orden de foco por teclado/D-Pad.
-6. **Contratos de Datos (§8):** Escribir los tipos, clases inmutables e interfaces `CT-*` exactas.
-7. **Mapa de Implementación (§10):** Mapear cada fila `FR` → `CT` → `archivo::símbolo` → `TC` con estado `Pending`.
-8. **Pruebas (§11 y §12):** Detallar los casos de prueba unitarios/integración `TC-*` y escenarios Gherkin.
-9. **Aprobación:** Solo cuando todo esté completo y sin placeholders `<...>`, cambiar `status: DRAFT` a `status: APPROVED`.
 """
 
-        # 6. create-process-sdd/SKILL.md
-        out["create-process-sdd/SKILL.md"] = f"""---
-name: create-process-sdd
-description: Genera el andamiaje canónico de una spec de proceso (PRC-NN) para {m.identity.name}.
+        # 6. consolidate-change/SKILL.md
+        out["consolidate-change/SKILL.md"] = f"""---
+name: consolidate-change
+description: Consolida y archiva una propuesta OpenSpec aprobada en .ai-harness/sdd/archive/ para {m.identity.name}.
 ---
 
-# Create Process SDD
+# Consolidate Change
 
-Genera una nueva especificación técnica de flujo o proceso en `.ai-harness/sdd/2_PROCESSES/`.
+Aplica los deltas aprobados en el módulo maestro y mueve la propuesta a la memoria histórica `archive/`.
 
 ## Comandos
 
 ```bash
-python .ai-harness/skills/create-process-sdd/runner.py PRC-NN \\
-  --name "<Nombre del flujo>" \\
-  --target docs/flows/<nombre_flujo>.md \\
-  --dir .ai-harness/sdd/2_PROCESSES/<modulo>/PRC-NN-<slug> \\
-  --block 2_PROCESSES
+python .ai-harness/skills/consolidate-change/runner.py [change_id]
 ```
-
-## Flujo de trabajo para redactar la especificación
-
-1. **Historia de Usuario (`user_story.md`):** Identificar qué flujo orquesta, los componentes involucrados y los escenarios BDD de éxito y contingencia.
-2. **Disparador y Condiciones (§2):** Fijar claramente el trigger, precondiciones, postcondiciones y política de reintento.
-3. **Flujo y Secuencia (§5):** Diseñar el diagrama de secuencia Mermaid numerado con todos los actores y participantes (`CMP-*`).
-4. **Pasos Atómicos (§6):** Desglosar la secuencia en pasos `ST-01`, `ST-02`, etc., asignando el componente responsable de cada paso.
-5. **Errores y Recuperación (§7):** Documentar la estrategia de contingencia y liberación de recursos ante fallos.
-6. **Mapa de Implementación (§11):** Mapear cada paso `ST` → `CT` → `archivo::símbolo` → `TC`.
-7. **Aprobación:** Pasar a `status: APPROVED` cuando no queden placeholders pendientes.
 """
 
         # 7. launch-app/SKILL.md
@@ -262,17 +232,17 @@ python .ai-harness/skills/git-publish/runner.py push -m "<tipo>: <descripcion de
 ## 2. Modus Operandi
 1. **Carga JIT:** Antes de inspeccionar código o proponer cambios, cargar en orden los documentos de `AGENTS.md` §1.
 2. **Límites de Escritura:** Localizar el scope correspondiente en `.ai-harness/scopes/` y escribir exclusivamente en sus rutas autorizadas.
-3. **SDD-First:** Prohibido escribir código de producción sin spec `.spec.md` aprobada (`status: APPROVED`).
-4. **Cero Invención:** Si falta un dato o requerimiento, registrarlo como pregunta abierta en §15/§16 y detenerse.
+3. **OpenSpec-First:** Prohibido escribir código de nuevas features sin propuesta en `changes/` consolidada en el módulo maestro. Para hotfixes, aplicar Fast-Path (<3 archivos).
+4. **Cero Invención:** Si falta un dato o requerimiento, registrarlo como pregunta abierta y detenerse.
 
 ## 3. Despacho de Workflows
 Los comandos disponibles se invocan con barra inclinada (`/`) a través de `.clinerules/workflows/`:
 - `/list-skills.md`: Inventario de herramientas y skills operativas.
-- `/create-component-sdd.md`: Andamiaje para nuevos componentes.
-- `/create-process-sdd.md`: Andamiaje para flujos y procesos.
+- `/propose-change.md`: Propuesta de cambio aislada (delta OpenSpec).
+- `/consolidate-change.md`: Consolidación y archivo de propuesta aprobada.
 - `/harness-validator.md`: Verificación de integridad normativa.
 - `/preflight.md`: Puerta de calidad de código y arquitectura.
-- `/sync-sdd.md`: Sincronización spec ↔ código.
+- `/sync-sdd.md`: Auditoría de módulos vivos y tareas en curso.
 - `/launch-app.md`: Arranque de la aplicación.
 - `/git-publish.md`: Publicación segura en Git (solo bajo demanda).
 
@@ -328,32 +298,32 @@ python .ai-harness/skills/sync-sdd/runner.py --baseline
 ```
 """
 
-        out["workflows/create-component-sdd.md"] = f"""# Workflow — Crear Spec de Componente ({m.identity.name})
+        out["workflows/propose-change.md"] = f"""# Workflow — Proponer Cambio OpenSpec ({m.identity.name})
 
 ## Objetivo
-Crear una nueva spec de componente CMP-NN conforme a las plantillas canónicas.
+Crear una propuesta de cambio aislada (delta) en `changes/` para su revisión rápida antes de codificar.
 
 ## Protocolo
 1. Ejecutar:
 ```bash
-python .ai-harness/skills/create-component-sdd/runner.py CMP-NN --name "<Nombre>" --target "<ruta>" --layer "<layer>" --dir ".ai-harness/sdd/1_COMPONENTS/<layer>/CMP-NN-<slug>"
+python .ai-harness/skills/propose-change/runner.py <slug> --module <MOD-id> --title "<Título>"
 ```
-2. Completar las 15 secciones técnicas sin placeholders pendientes.
-3. Cambiar a `status: APPROVED`.
+2. Completar el delta conceptual en `proposal.md` y las tareas en `tasks.md`.
+3. Revisar con el desarrollador humano.
 """
 
-        out["workflows/create-process-sdd.md"] = f"""# Workflow — Crear Spec de Proceso ({m.identity.name})
+        out["workflows/consolidate-change.md"] = f"""# Workflow — Consolidar Cambio OpenSpec ({m.identity.name})
 
 ## Objetivo
-Crear una nueva spec de proceso PRC-NN conforme a las plantillas canónicas.
+Aplicar una propuesta aprobada sobre el módulo maestro y archivarla en `archive/`.
 
 ## Protocolo
-1. Ejecutar:
+1. Aplicar las modificaciones en `.ai-harness/sdd/modules/<modulo>.md`.
+2. Ejecutar:
 ```bash
-python .ai-harness/skills/create-process-sdd/runner.py PRC-NN --name "<Nombre>" --target "docs/flows/<flujo>.md" --dir ".ai-harness/sdd/2_PROCESSES/<modulo>/PRC-NN-<slug>"
+python .ai-harness/skills/consolidate-change/runner.py [change_id]
 ```
-2. Diseñar el diagrama Mermaid y completar los pasos `ST-*`.
-3. Cambiar a `status: APPROVED`.
+3. Implementar código y pruebas siguiendo `tasks.md`.
 """
 
         out["workflows/launch-app.md"] = f"""# Workflow — Arranque de la Aplicación ({m.identity.name})
@@ -409,19 +379,19 @@ skills:
     status: active
     command: python .ai-harness/skills/sync-sdd/runner.py
     doc: .agents/skills/sync-sdd/SKILL.md
-    description: Comprueba la sincronización entre specs .spec.md y código en disco.
+    description: Audita la sincronización entre módulos OpenSpec, tareas activas y código en disco.
 
-  - name: create-component-sdd
+  - name: propose-change
     status: active
-    command: python .ai-harness/skills/create-component-sdd/runner.py
-    doc: .agents/skills/create-component-sdd/SKILL.md
-    description: Crea el esqueleto de una spec de componente CMP-NN.
+    command: python .ai-harness/skills/propose-change/runner.py
+    doc: .agents/skills/propose-change/SKILL.md
+    description: Crea una propuesta de cambio aislada (delta OpenSpec) en changes/ para su revisión rápida.
 
-  - name: create-process-sdd
+  - name: consolidate-change
     status: active
-    command: python .ai-harness/skills/create-process-sdd/runner.py
-    doc: .agents/skills/create-process-sdd/SKILL.md
-    description: Crea el esqueleto de una spec de proceso PRC-NN.
+    command: python .ai-harness/skills/consolidate-change/runner.py
+    doc: .agents/skills/consolidate-change/SKILL.md
+    description: Aplica una propuesta aprobada sobre el módulo maestro y la archiva en archive/.
 
   - name: launch-app
     status: active

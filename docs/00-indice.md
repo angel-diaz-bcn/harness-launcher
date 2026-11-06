@@ -19,13 +19,14 @@ Sirve para entender la idea y poder explicarla.
 
 1. `01` → `02` → `03` → `04` → `05`
 2. `08-skills-y-validadores.md`
-3. `cheatsheet.md`
+3. `13-ejemplo-practico-paso-a-paso.md`
+4. `cheatsheet.md`
 
 Sirve para usar el arnés en un proyecto real sin romperlo.
 
 ### Ruta completa (4 horas)
 
-Todas las páginas en orden. Sirve para diseñar y mantener un arnés propio.
+Todas las páginas en orden (01 a 13). Sirve para diseñar y mantener un arnés propio.
 
 ---
 
@@ -37,7 +38,7 @@ Todas las páginas en orden. Sirve para diseñar y mantener un arnés propio.
 | `02-agents-md.md` | El contrato con el agente | `AGENTS.md`, `.clinerules/rules.md` |
 | `03-contexto.md` | Verdad normativa y orden de carga | `.ai-harness/context/*` |
 | `04-scopes.md` | Límites de escritura | `.ai-harness/scopes/*` |
-| `05-sdd.md` | Especificaciones y trazabilidad | `.ai-harness/sdd/*` |
+| `05-sdd.md` | Especificaciones vivas y OpenSpec | `.ai-harness/sdd/*` |
 | `06-design-system.md` | Tokens y disciplina visual | `.ai-harness/design-system/*` |
 | `07-memoria.md` | Fallos, decisiones y feedback | `.ai-harness/memory/*` |
 | `08-skills-y-validadores.md` | Automatización y puertas | `.ai-harness/skills/*` |
@@ -45,6 +46,7 @@ Todas las páginas en orden. Sirve para diseñar y mantener un arnés propio.
 | `10-ignorar.md` | `.gitignore` vs `.aiignore` | Ambos archivos |
 | `11-cierre-y-auditoria.md` | Definition of Done y mantenimiento | `harness_governance.md` |
 | `12-bootstrap-harness.md` | Inicializador interactivo y asistido del arnés | `.ai-harness/skills/bootstrap-harness/*`, `.ai-harness/input/*` |
+| `13-ejemplo-practico-paso-a-paso.md` | Caso real de extremo a extremo (OpenSpec en acción) | `modules/`, `changes/`, `archive/` |
 | `cheatsheet.md` | Resumen de una página | — |
 
 ---

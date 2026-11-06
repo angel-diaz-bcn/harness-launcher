@@ -53,6 +53,7 @@ assets/
 ```
 
 Prohibido escribir en `lib/features/*/domain/` y `lib/features/*/data/`.
+Prohibido modificar archivos del arnés o CI: `.ai-harness/skills/`, `.ai-harness/context/`, `harness.config.yaml`, `.github/`.
 
 ## Comprobaciones
 

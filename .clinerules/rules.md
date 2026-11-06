@@ -11,9 +11,10 @@ ni de los scopes activos.
 
 1. **Carga JIT obligatoria:** Antes de leer código o proponer cambios, ejecutar en orden estricto la secuencia de lectura de `AGENTS.md` §1.
 2. **Fronteras de Escritura:** Identificar el scope correspondiente en `.ai-harness/scopes/block_*.md` y escribir **exclusivamente** dentro de sus rutas autorizadas.
-3. **SDD-First estricto:** Prohibido implementar código de producción sin una spec `.spec.md` en estado `APPROVED`.
-4. **Cero asunciones:** Si falta un dato o requerimiento, registrarlo como pregunta abierta en §15/§16 y detener la implementación hasta aclararlo.
-5. **Cambios estructurales:** Si la tarea modifica la estructura del arnés (scopes, prefijos o reglas), empezar siempre por `harness.config.yaml`.
+3. **OpenSpec-First estricto:** Prohibido implementar código de nuevas features sin una propuesta en `changes/` consolidada en el módulo maestro. Para hotfixes triviales (<3 archivos), aplicar protocolo Fast-Path.
+4. **Inmutabilidad del arnés:** Prohibido modificar validadores, contextos ni configuración durante tareas de desarrollo de producto.
+5. **Cero asunciones:** Si falta un dato o requerimiento, registrarlo como pregunta abierta y detener la implementación hasta aclararlo.
+6. **Cambios estructurales:** Si la tarea modifica la estructura del arnés (scopes o reglas), empezar siempre por `harness.config.yaml`.
 
 ---
 
@@ -23,10 +24,10 @@ El agente descubre los workflows en `.clinerules/workflows/`. El comando del
 menú `/` es el nombre del archivo, incluida la extensión `.md`:
 
 - `/list-skills.md`: Descubrimiento e inventario de herramientas.
-- `/create-component-sdd.md`: Andamiaje para nuevos componentes.
-- `/create-process-sdd.md`: Andamiaje para flujos y procesos.
+- `/propose-change.md`: Propuesta de cambio aislada (delta OpenSpec).
+- `/consolidate-change.md`: Consolidación y archivado de propuesta aprobada.
 - `/harness-validator.md`: Validación de integridad normativa del arnés.
-- `/sync-sdd.md`: Sincronización criptográfica entre specs y código.
+- `/sync-sdd.md`: Auditoría de módulos vivos y tareas en curso.
 - `/preflight.md`: Puerta de calidad de arquitectura y código.
 - `/launch-app.md`: Arranque de la aplicación localmente.
 - `/git-publish.md`: Publicación segura en Git (solo bajo demanda explícita).

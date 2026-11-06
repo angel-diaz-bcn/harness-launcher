@@ -12,6 +12,12 @@ proyecto nuevo, se copia **solo** la sección 1.
 | `AGENTS.md` | Sí | Enrutador operativo |
 | `harness.config.yaml` | Sí | Configuración estructural |
 | `requirements.txt` | Sí | Dependencias del tooling |
+| `LICENSE` | Sí | Licencia de código abierto MIT |
+| `CONTRIBUTING.md` | Sí | Guía de contribución para humanos y agentes |
+| `.gitattributes` | Sí | Normalización de saltos de línea LF para determinismo criptográfico |
+| `.gitlab-ci.yml` | Opcional | Pipeline de CI/CD para GitLab |
+| `.github/workflows/harness-ci.yml` | Opcional | Pipeline de CI/CD para GitHub Actions |
+| `.github/*` y `.gitlab/*` | Opcional | Plantillas nativas de PR, MR e issues |
 | `.aiignore` | Sí | Exclusión de contexto para el agente |
 | `.gitignore` | Sí | Exclusión de control de versiones |
 | `.clinerules/rules.md` | Sí | Reglas de integración del agente |
@@ -20,9 +26,10 @@ proyecto nuevo, se copia **solo** la sección 1.
 | `.agents/skills/README.md` | Sí | Índice de skills |
 | `.ai-harness/context/*` | Sí | 12 documentos normativos |
 | `.ai-harness/scopes/*` | Sí | Límites de escritura |
-| `.ai-harness/sdd/templates/*` | Sí | Plantillas y convención |
-| `.ai-harness/sdd/1_COMPONENTS/*` | Sí | Taxonomía de componentes |
-| `.ai-harness/sdd/2_PROCESSES/*` | Sí | Taxonomía de procesos |
+| `.ai-harness/sdd/templates/*` | Sí | Plantillas y convención OpenSpec |
+| `.ai-harness/sdd/modules/*` | Sí | Módulos vivos consolidados |
+| `.ai-harness/sdd/changes/*` | Sí | Propuestas activas de cambio |
+| `.ai-harness/sdd/archive/*` | Sí | Histórico de cambios completados |
 | `.ai-harness/memory/*` | Sí | Modos de fallo, ADRs y feedback |
 | `.ai-harness/design-system/*` | Sí | Tokens y documentos de diseño |
 | `.ai-harness/fixtures/README.md` | Sí | Convención de datos de prueba |

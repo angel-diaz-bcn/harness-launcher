@@ -37,7 +37,8 @@ Un cambio está terminado cuando:
 - [ ] `sync-sdd` no reporta `DIVERGED`.
 - [ ] Cada skill tocada mantiene manifiesto, runner, doc y registro.
 - [ ] Cada scope apunta a rutas existentes.
-- [ ] Cada spec tiene historia, target y mapa de implementación.
+- [ ] Cada módulo vivo en `modules/` tiene `target_path` y mapa de implementación.
+- [ ] Las propuestas en `changes/` tienen sus tareas completadas o han sido consolidadas en `modules/`.
 - [ ] No hay términos del proyecto anterior.
 - [ ] No hay dos fuentes de verdad para la misma regla.
 
@@ -50,7 +51,7 @@ Antes de cada release:
 | 1 | Términos heredados | `legacy_terms` en la configuración + búsqueda manual |
 | 2 | Scopes vs estructura | Comparar `scopes/*` con `project_structure.md` |
 | 3 | Registro vs realidad | Comparar `registry.yaml` con los `skill.yaml` reales |
-| 4 | Specs con target y pruebas | Revisar `status: APPROVED` |
+| 4 | Módulos con target y pruebas | Revisar `modules/` y salida de `sync-sdd` |
 | 5 | `AGENTS.md` sin reglas duplicadas | Lectura crítica de una página |
 | 6 | Enlaces y rutas | Comprobar que todo path citado existe |
 
@@ -103,6 +104,17 @@ justificación y su versión.
 5. ¿Error recurrente?        → añadir a failure_modes.md
 6. ¿Decisión estructural?    → añadir ADR
 ```
+
+## 7. Integración Continua Dual (GitHub Actions y GitLab CI)
+
+El cierre local se complementa con la validación en CI en entornos remotos aislados:
+
+| Plataforma | Archivo de canalización | Plantilla de revisión |
+|---|---|---|
+| **GitHub** | `.github/workflows/harness-ci.yml` | `.github/PULL_REQUEST_TEMPLATE.md` |
+| **GitLab** | `.gitlab-ci.yml` | `.gitlab/merge_request_templates/Default.md` |
+
+En ambas plataformas, el pipeline ejecuta `harness-validator`, `preflight --strict` y `sync-sdd`, asegurando que ningún código entre a la rama principal sin haber superado las puertas deterministas.
 
 ## Referencias
 

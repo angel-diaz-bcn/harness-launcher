@@ -1,42 +1,34 @@
 ---
 name: sync-sdd
-description: Comprueba que cada spec aprobada (.spec.md), su target y la implementación en disco no divergen.
+description: Audita que cada módulo vivo en modules/ y cada propuesta en changes/ estén alineados con el código en disco.
 ---
 
-# Sync SDD
+# Sync SDD (OpenSpec)
 
-Comprueba que cada spec aprobada, su `target` y la implementación no divergen.
+Audita el estado de sincronización entre la verdad consolidada de `modules/`, las tareas en curso en `changes/` y el código fuente.
 
-## Comando
+## Comandos
 
 ```bash
-python .ai-harness/skills/sync-sdd/runner.py            # todas las specs
-python .ai-harness/skills/sync-sdd/runner.py CMP-01     # una spec concreta
-python .ai-harness/skills/sync-sdd/runner.py --baseline  # registra el estado actual
+python .ai-harness/skills/sync-sdd/runner.py            # auditoría completa
+python .ai-harness/skills/sync-sdd/runner.py --baseline  # registra los hashes actuales de los módulos
+python .ai-harness/skills/sync-sdd/runner.py --tier fast # auditoría para modo fast-path
 python .ai-harness/skills/sync-sdd/runner.py --json
 ```
 
-## Estados
+## Estados de alineación
 
 | Estado | Significado |
 |---|---|
-| `N/A` | La spec no está aprobada; no se espera implementación |
-| `MISSING` | El `target` no existe |
-| `PRESENT` | Target existe y coincide con el baseline |
-| `DIVERGED` | Cambió la spec o el target desde el baseline |
+| `PRESENT` | El módulo existe, su target en disco existe y coincide con la línea base |
+| `PENDING_TASKS` | La propuesta en `changes/` tiene tareas pendientes (`[ ]`) |
+| `READY_TO_CONSOLIDATE` | Todas las tareas de `tasks.md` están completadas (`[x]`); listo para `/consolidate-change` |
+| `MISSING` | El `target_path` declarado en el módulo no existe en el repositorio |
+| `DIVERGED` | El módulo o su target han cambiado respecto a la última línea base |
+| `N/A` | Módulo sin target declarado o sin tareas ejecutables |
 
 ## Cuándo usarla
 
-- Al cerrar una spec (`--baseline` para fijar el punto de partida).
-- Antes de publicar en Git.
-- Tras cualquier cambio de comportamiento.
-
-## Salida
-
-Código 0 si no hay `DIVERGED`; 1 si hay divergencias. El baseline se guarda en
-`memory/sync-state.json` (no se edita a mano).
-
-## Reglas
-
-- Una divergencia se resuelve actualizando spec o código, no falseando el baseline.
-- Toda spec aprobada debe tener target existente.
+- Tras completar la implementación de un cambio.
+- Antes de publicar en Git o solicitar revisión de PR.
+- Para verificar que no quedan tareas huérfanas en `changes/`.

@@ -86,10 +86,9 @@ Container(
 // Escribir src/feature/service.py sin spec previa en .ai-harness/sdd/
 
 // ✅ CORRECTO:
-// 1. Ejecutar /create-component-sdd.md
-// 2. Redactar FR-*, CT-*, TC-* y mapa de implementación
-// 3. Pasar a status: APPROVED
-// 4. Implementar en src/feature/service.py""",
+// 1. Ejecutar /propose-change.md o aplicar Fast-Path (<3 archivos)
+// 2. Revisar delta en proposal.md y consolidar con /consolidate-change.md
+// 3. Implementar en src/feature/service.py""",
                 "El validador `sync-sdd` y `harness-validator` reportan error fatal ante código no referenciado en una spec aprobada."
             ),
             (

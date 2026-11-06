@@ -145,35 +145,35 @@ scopes:
   path_roots:
 {self._to_yaml_list(all_path_roots or ['lib/'], indent=4)}
   forbidden_paths:
-{self._to_yaml_list(all_forbidden_paths, indent=4)}
+    - ".ai-harness/skills/"
+    - ".ai-harness/context/"
+    - ".github/"
+    - "harness.config.yaml"
 
 sdd:
-  component_prefix: CMP
-  process_prefix: PRC
-  component_layers:
-    - bootstrap
-    - domain
-    - ui
+  engine: openspec
+  paths:
+    modules: ".ai-harness/sdd/modules"
+    changes: ".ai-harness/sdd/changes"
+    archive: ".ai-harness/sdd/archive"
+    templates: ".ai-harness/sdd/templates"
   blocks:
-    - 1_COMPONENTS
-    - 2_PROCESSES
+    - modules
+    - changes
+    - archive
     - templates
   implementation_map_heading: "Mapa de implementación"
-  frontmatter:
-    - spec_id
-    - spec_type
-    - name
-    - target
-    - block
-    - status
-    - version
-    - owner
-    - last_reviewed
-    - approved_at
-    - approved_by
-    - supersedes
-    - superseded_by
-    - user_story
+  tiers:
+    fast_path:
+      enabled: true
+      max_files_changed: 3
+      require_tests: true
+    standard:
+      require_proposal: true
+      require_tasks_complete: true
+    core:
+      require_proposal: true
+      require_adr: true
 
 memory:
   failure_prefix: "FM"
@@ -554,9 +554,10 @@ proyecto nuevo, se copia solo la sección 1.
 | `.agents/skills/README.md` | Sí | Índice de skills |
 | `.ai-harness/context/*` | Sí | 12 documentos normativos |
 | `.ai-harness/scopes/*` | Sí | Límites de escritura |
-| `.ai-harness/sdd/templates/*` | Sí | Plantillas y convención |
-| `.ai-harness/sdd/1_COMPONENTS/*` | Sí | Taxonomía de componentes |
-| `.ai-harness/sdd/2_PROCESSES/*` | Sí | Taxonomía de procesos |
+| `.ai-harness/sdd/templates/*` | Sí | Plantillas y convención OpenSpec |
+| `.ai-harness/sdd/modules/*` | Sí | Módulos vivos consolidados |
+| `.ai-harness/sdd/changes/*` | Sí | Propuestas activas de cambio |
+| `.ai-harness/sdd/archive/*` | Sí | Histórico de cambios completados |
 | `.ai-harness/memory/*` | Sí | Modos de fallo, ADRs y feedback |
 | `.ai-harness/design-system/*` | Sí | Tokens y documentos de diseño |
 | `.ai-harness/fixtures/README.md` | Sí | Convención de datos de prueba |
@@ -694,10 +695,12 @@ de implementar.
 | Plataformas | `context/platform_matrix.md` | — |
 | Testing | `context/testing_guidelines.md` | — |
 | Límites de escritura | `scopes/block_*.md` | — |
-| Especificaciones | `sdd/` y `sdd/templates/README.md` | `/create-component-sdd.md`, `/create-process-sdd.md` |
+| Módulos consolidados | `.ai-harness/sdd/modules/` | — |
+| Propuesta de cambio (delta) | `.ai-harness/sdd/changes/` | `/propose-change.md` |
+| Consolidación de cambio | `.ai-harness/sdd/archive/` | `/consolidate-change.md` |
 | Validación de producto | `context/architecture_rules.md` §6 | `/preflight.md` |
 | Validación del arnés | `context/harness_governance.md` §8 | `/harness-validator.md` |
-| Sincronización spec↔código | `sdd/templates/README.md` | `/sync-sdd.md` |
+| Auditoría spec↔código | `.ai-harness/sdd/` | `/sync-sdd.md` |
 | Arranque de la app | `context/platform_matrix.md` | `/launch-app.md` |
 | Publicación Git | `.clinerules/workflows/git-publish.md` | `/git-publish.md` solo bajo demanda |
 

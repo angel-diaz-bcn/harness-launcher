@@ -7,9 +7,9 @@
 |---|---|---|
 | `harness-validator` | `harness-validator/SKILL.md` | Valida la estructura del arnés |
 | `preflight` | `preflight/SKILL.md` | Valida código, arquitectura, tokens y dependencias |
-| `sync-sdd` | `sync-sdd/SKILL.md` | Deriva el estado spec ↔ implementación |
-| `create-component-sdd` | `create-component-sdd/SKILL.md` | Crea el esqueleto de un componente |
-| `create-process-sdd` | `create-process-sdd/SKILL.md` | Crea el esqueleto de un proceso |
+| `sync-sdd` | `sync-sdd/SKILL.md` | Audita módulos vivos y tareas OpenSpec |
+| `propose-change` | `propose-change/SKILL.md` | Crea una propuesta de cambio (delta OpenSpec) |
+| `consolidate-change` | `consolidate-change/SKILL.md` | Consolida y archiva un cambio aprobado |
 | `launch-app` | `launch-app/SKILL.md` | Arranca la app (stack Flutter) |
 | `git-publish` | `git-publish/SKILL.md` | Publica en Git bajo petición explícita |
 

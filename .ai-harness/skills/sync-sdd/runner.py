@@ -1,4 +1,4 @@
-"""sync-sdd: deriva el estado de implementación de specs y targets."""
+"""sync-sdd: audita el estado de sincronización de módulos vivos y propuestas OpenSpec."""
 
 from __future__ import annotations
 
@@ -24,10 +24,8 @@ from harness_config import require_dependencies
 
 require_dependencies()
 
-
 from models import SddSyncItem, SddSyncReport
 
-APPROVED = "APPROVED"
 STATE_PATH = harness_dir / "memory" / "sync-state.json"
 
 
@@ -38,24 +36,21 @@ def _value(content: str, key: str) -> str | None:
     return match.group(1).strip().strip("\"'")
 
 
-def _target_path(value: str) -> Path:
-    clean = value.strip().strip("`").split("::", 1)[0].strip()
-    return workspace_root / clean
-
-
 def _hash_file(path: Path) -> str:
+    if not path.exists():
+        return ""
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def _load_state() -> dict:
     if not STATE_PATH.exists():
-        return {"version": 1, "items": {}}
+        return {"version": 2, "modules": {}}
     try:
         state = json.loads(STATE_PATH.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {"version": 1, "items": {}}
-    if not isinstance(state, dict) or not isinstance(state.get("items"), dict):
-        return {"version": 1, "items": {}}
+        return {"version": 2, "modules": {}}
+    if not isinstance(state, dict):
+        return {"version": 2, "modules": {}}
     return state
 
 
@@ -67,129 +62,171 @@ def _save_state(state: dict) -> None:
     )
 
 
+def count_tasks(tasks_content: str) -> tuple[int, int]:
+    """Devuelve (pendientes, completadas)."""
+    pending = len(re.findall(r"-\s*\[\s*\]", tasks_content))
+    completed = len(re.findall(r"-\s*\[[xX]\]", tasks_content))
+    return pending, completed
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="SDD sync")
-    parser.add_argument("spec", nargs="?", default="all", help="Spec id, path, or 'all'")
-    parser.add_argument("--json", action="store_true", help="Emit JSON report")
+    parser = argparse.ArgumentParser(description="OpenSpec SDD sync auditor")
+    parser.add_argument("--json", action="store_true", help="Emitir informe JSON")
     parser.add_argument(
         "--baseline",
         action="store_true",
-        help="Record current spec/target hashes as the implementation baseline",
+        help="Registrar hashes actuales de módulos como línea base",
+    )
+    parser.add_argument(
+        "--tier",
+        choices=["fast", "standard", "core"],
+        default="standard",
+        help="Nivel de rigurosidad del cambio",
     )
     args = parser.parse_args()
 
     sdd_dir = harness_dir / "sdd"
-    specs = sorted(sdd_dir.rglob("*.spec.md"))
+    modules_dir = sdd_dir / "modules"
+    changes_dir = sdd_dir / "changes"
+
     previous_state = _load_state()
-    next_state = {"version": 1, "items": dict(previous_state.get("items", {}))}
+    next_state = {"version": 2, "modules": dict(previous_state.get("modules", {}))}
 
     items: list[SddSyncItem] = []
-    for spec in specs:
-        content = spec.read_text(encoding="utf-8", errors="ignore")
-        spec_id = _value(content, "spec_id") or spec.stem
-        target = _value(content, "target") or ""
-        status = _value(content, "status") or "DRAFT"
-        version = _value(content, "version") or ""
 
-        if args.spec != "all":
-            requested = Path(args.spec)
-            matches = args.spec == spec_id or requested.resolve() == spec.resolve()
-            if not matches:
+    # 1. Auditar Módulos Vivos en modules/
+    if modules_dir.is_dir():
+        for mod_path in sorted(modules_dir.glob("*.md")):
+            if mod_path.name in {"README.md", "INDEX.md"} or mod_path.name.startswith("."):
                 continue
 
-        story = spec.parent / "user_story.md"
-        target_path = _target_path(target) if target else workspace_root / "__missing__"
-        has_target = bool(target) and target_path.exists()
-        spec_hash = _hash_file(spec)
-        target_hash = _hash_file(target_path) if has_target else ""
-        previous = previous_state.get("items", {}).get(spec_id)
+            content = mod_path.read_text(encoding="utf-8", errors="ignore")
+            mod_id = _value(content, "module_id") or mod_path.stem
+            target_str = _value(content, "target_path") or ""
+            version = _value(content, "version") or "1.0.0"
 
-        if not story.exists():
-            state = "DIVERGED"
-            details = "missing user_story.md"
-            next_state["items"].pop(spec_id, None)
-        elif status != APPROVED:
-            state = "N/A"
-            details = f"status {status}; implementation not expected"
-            next_state["items"].pop(spec_id, None)
-        elif not target:
-            state = "MISSING"
-            details = "missing target in front matter"
-            next_state["items"].pop(spec_id, None)
-        elif not has_target:
-            state = "MISSING"
-            details = f"target does not exist: {target}"
-            next_state["items"].pop(spec_id, None)
-        else:
-            if args.baseline or previous is None:
+            target_path = workspace_root / target_str if target_str else None
+            has_target = target_path.exists() if target_path else False
+
+            mod_hash = _hash_file(mod_path)
+            target_hash = _hash_file(target_path) if (has_target and target_path.is_file()) else ""
+            prev = previous_state.get("modules", {}).get(mod_id)
+
+            if not target_str:
+                state = "N/A"
+                details = "Módulo sin target_path declarado"
+            elif not has_target:
+                state = "MISSING"
+                details = f"El target '{target_str}' no existe en disco"
+            elif args.baseline or prev is None:
                 state = "PRESENT"
-                details = (
-                    "target exists; baseline recorded"
-                    if args.baseline
-                    else "target exists; no baseline yet"
-                )
-            elif previous.get("spec_hash") != spec_hash:
+                details = "Línea base registrada" if args.baseline else "Target existe sin línea base previa"
+            elif prev.get("mod_hash") != mod_hash:
                 state = "DIVERGED"
-                details = "spec changed since last baseline"
-            elif previous.get("target_hash") != target_hash:
-                state = "DIVERGED"
-                details = "target changed since last baseline"
+                details = "El módulo ha cambiado desde la última línea base"
             else:
                 state = "PRESENT"
-                details = "target exists and matches baseline"
+                details = "Módulo sincronizado con código y línea base"
 
             if state == "PRESENT" or args.baseline:
-                next_state["items"][spec_id] = {
-                    "spec_hash": spec_hash,
+                next_state["modules"][mod_id] = {
+                    "mod_hash": mod_hash,
                     "target_hash": target_hash,
-                    "status": status,
                     "version": version,
                     "recorded_at": datetime.now(timezone.utc).isoformat(),
                 }
 
-        items.append(
-            SddSyncItem(
-                spec_id=spec_id,
-                spec_path=str(spec.relative_to(workspace_root)),
-                target=target,
-                status=status,
-                version=version,
-                has_user_story=story.exists(),
-                has_target=has_target,
-                sync_state=state,
-                details=details,
+            items.append(
+                SddSyncItem(
+                    item_type="module",
+                    item_id=mod_id,
+                    path=str(mod_path.relative_to(workspace_root)),
+                    target=target_str,
+                    status="ACTIVE",
+                    sync_state=state,
+                    details=details,
+                )
             )
-        )
 
-    not_applicable = sum(1 for item in items if item.sync_state == "N/A")
-    missing = sum(1 for item in items if item.sync_state == "MISSING")
-    present = sum(1 for item in items if item.sync_state == "PRESENT")
-    diverged = sum(1 for item in items if item.sync_state == "DIVERGED")
-    report = SddSyncReport(
-        total=len(items),
-        not_applicable=not_applicable,
-        missing=missing,
-        present=present,
-        diverged=diverged,
-        items=items,
-        is_successful=diverged == 0,
-    )
+    # 2. Auditar Cambios Activos en changes/
+    if changes_dir.is_dir():
+        for change_dir in sorted(changes_dir.iterdir()):
+            if not change_dir.is_dir() or change_dir.name.startswith("."):
+                continue
+
+            prop_path = change_dir / "proposal.md"
+            tasks_path = change_dir / "tasks.md"
+
+            status = "PROPOSED"
+            if prop_path.exists():
+                prop_content = prop_path.read_text(encoding="utf-8", errors="ignore")
+                status = _value(prop_content, "status") or "PROPOSED"
+
+            pending, completed = 0, 0
+            if tasks_path.exists():
+                tasks_content = tasks_path.read_text(encoding="utf-8", errors="ignore")
+                pending, completed = count_tasks(tasks_content)
+
+            if pending > 0:
+                state = "PENDING_TASKS"
+                details = f"{pending} tareas pendientes ([ ]), {completed} completadas"
+            elif completed > 0 and pending == 0:
+                state = "READY_TO_CONSOLIDATE"
+                details = f"Todas las tareas ({completed}) completadas. Listo para /consolidate-change"
+            else:
+                state = "N/A"
+                details = "Sin tareas ejecutables registradas"
+
+            items.append(
+                SddSyncItem(
+                    item_type="change",
+                    item_id=change_dir.name,
+                    path=str(change_dir.relative_to(workspace_root)),
+                    status=status,
+                    sync_state=state,
+                    details=details,
+                    pending_tasks=pending,
+                    completed_tasks=completed,
+                )
+            )
 
     _save_state(next_state)
+
+    total_modules = sum(1 for i in items if i.item_type == "module")
+    total_changes = sum(1 for i in items if i.item_type == "change")
+    present_cnt = sum(1 for i in items if i.sync_state == "PRESENT")
+    pending_cnt = sum(1 for i in items if i.sync_state == "PENDING_TASKS")
+    diverged_cnt = sum(1 for i in items if i.sync_state == "DIVERGED")
+
+    # Si hay tareas pendientes en standard/core, o divergencias, no es exitoso
+    is_success = diverged_cnt == 0
+    if args.tier != "fast" and any(i.sync_state == "PENDING_TASKS" and i.status == "IMPLEMENTING" for i in items):
+        is_success = False
+
+    report = SddSyncReport(
+        total_modules=total_modules,
+        total_changes=total_changes,
+        present=present_cnt,
+        pending=pending_cnt,
+        diverged=diverged_cnt,
+        items=items,
+        is_successful=is_success,
+    )
 
     if args.json:
         print(report.model_dump_json(indent=2))
     else:
-        print("SDD SYNC")
+        print("OPENSPEC SDD SYNC REPORT")
         print("=" * 72)
         for item in items:
-            print(f"[{item.sync_state}] {item.spec_id} -> {item.target or '(sin target)'}")
+            prefix = "[MOD]" if item.item_type == "module" else "[CHG]"
+            print(f"{prefix} [{item.sync_state}] {item.item_id}")
             if item.details:
-                print(f"  {item.details}")
+                print(f"      {item.details}")
         print("=" * 72)
         print(
-            f"Total: {report.total} | N/A: {not_applicable} | MISSING: {missing} | "
-            f"PRESENT: {present} | DIVERGED: {diverged}"
+            f"Módulos: {total_modules} | Cambios activos: {total_changes} | "
+            f"Sincronizados: {present_cnt} | Pendientes: {pending_cnt} | Divergencias: {diverged_cnt}"
         )
 
     sys.exit(0 if report.is_successful else 1)

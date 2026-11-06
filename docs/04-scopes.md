@@ -62,6 +62,7 @@ Y en la capa de código, `preflight` verifica que las fronteras se respetan:
 | `ARCH-CROSS-FEATURE-IMPORT` | Una feature importa los internals de otra |
 | `ARCH-PERSISTENCE-LEAK` | Persistencia fuera de su feature propietaria |
 | `ARCH-FRAMEWORK-LEAK` | Una feature framework-free importa el framework de UI |
+| `TAMPER-HARNESS-MODIFIED` | Intento de modificar validadores, contextos o configuración del arnés |
 
 ## Qué rompe si falta
 

@@ -26,16 +26,16 @@ corregibles** antes de llegar al repositorio.
 
 ```
 1. Contrato       AGENTS.md + .clinerules/rules.md
-                  → qué debe hacer el agente y en qué orden
+                  → qué debe hacer el agente y en qué orden (Fast-Path vs OpenSpec)
 
-2. Verdad         .ai-harness/context/ + scopes/
-                  → qué es cierto del sistema y dónde se puede escribir
+2. Verdad         .ai-harness/context/ + scopes/ + sdd/modules/
+                  → qué es cierto del sistema, módulos vivos y dónde se puede escribir
 
-3. Plan           .ai-harness/sdd/
-                  → qué se va a construir, con qué contratos y pruebas
+3. Plan           .ai-harness/sdd/changes/ (proposal.md + tasks.md)
+                  → deltas aislados de lo que se propone cambiar antes de codificar
 
-4. Verificación   .ai-harness/skills/ + memory/
-                  → cómo se comprueba y qué no debe repetirse
+4. Verificación   .ai-harness/skills/ + memory/ + CI (.github/workflows)
+                  → puertas deterministas y registro de fallos para evitar regresiones
 ```
 
 Un arnés sano tiene las cuatro capas. Si falta la cuarta, las reglas son

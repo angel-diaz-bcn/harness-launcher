@@ -123,7 +123,7 @@ stack y proveedor elegido:
 | `.ai-harness/memory/failure_modes.md` | 5 modos de fallo iniciales (`FM-01` a `FM-05`) adaptados al stack. |
 | `.ai-harness/memory/decisions/` | `ADR-0001` documentando la elección del stack y arquitectura. |
 | `.ai-harness/design-system/tokens.json` | Tokens de color, tipografía y espaciado (o perfil de API si es backend). |
-| `.ai-harness/sdd/.../CMP-00-*.spec.md` | Especificación inicial de arranque del sistema (`app-bootstrap`). |
+| `.ai-harness/sdd/modules/*.md` | Módulos vivos consolidados (`core.md`, dominio y UI) con contratos y mapa de implementación. |
 | `.gitlab-ci.yml` / GitHub Actions | Canalización remota de calidad en GitLab o GitHub. |
 
 ### 6. Modos de ejecución del runner

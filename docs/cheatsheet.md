@@ -21,13 +21,13 @@ python .ai-harness/skills/sync-sdd/runner.py
 # Modo estricto y salida JSON
 python .ai-harness/skills/harness-validator/runner.py --strict --json
 
-# Sincronización de una spec y baseline
-python .ai-harness/skills/sync-sdd/runner.py CMP-01
+# Auditoría OpenSpec y baseline
+python .ai-harness/skills/sync-sdd/runner.py
 python .ai-harness/skills/sync-sdd/runner.py --baseline
 
-# Nuevas specs
-python .ai-harness/skills/create-component-sdd/runner.py CMP-01 --name "..." --target lib/... --dir ...
-python .ai-harness/skills/create-process-sdd/runner.py PRC-01 --name "..." --target lib/... --dir ...
+# Propuestas y consolidación OpenSpec
+python .ai-harness/skills/propose-change/runner.py add-oauth --module MOD-auth --title "Google OAuth"
+python .ai-harness/skills/consolidate-change/runner.py 2026-11-add-oauth
 
 # Arranque (stack Flutter)
 python .ai-harness/skills/launch-app/runner.py --list
@@ -52,8 +52,9 @@ python .ai-harness/skills/git-publish/runner.py status
 | Cambiar la estructura del arnés | `harness.config.yaml` |
 | Escribir una regla nueva | `.ai-harness/context/` o un scope |
 | Saber dónde puedo escribir | `.ai-harness/scopes/` |
-| Especificar un componente | `.ai-harness/sdd/1_COMPONENTS/` |
-| Especificar un proceso | `.ai-harness/sdd/2_PROCESSES/` |
+| Consultar la verdad de un módulo | `.ai-harness/sdd/modules/` |
+| Proponer un cambio aislado (delta) | `.ai-harness/sdd/changes/` (`/propose-change`) |
+| Consolidar y archivar un cambio | `.ai-harness/sdd/archive/` (`/consolidate-change`) |
 | Añadir un valor visual | `.ai-harness/design-system/tokens.json` |
 | Registrar un error recurrente | `.ai-harness/memory/failure_modes.md` |
 | Documentar una decisión | `.ai-harness/memory/decisions/` |
@@ -71,10 +72,9 @@ python .ai-harness/skills/git-publish/runner.py status
 | `context.agents_must_reference` | Referencias obligatorias en `AGENTS.md` |
 | `scopes.required` | Scopes obligatorios |
 | `scopes.path_roots` | Rutas autorizadas |
-| `scopes.forbidden_paths` | Rutas prohibidas de otro proyecto |
-| `sdd.component_prefix` / `.process_prefix` | Identificadores |
-| `sdd.component_layers` | Capas válidas |
-| `sdd.frontmatter` | Campos obligatorios de una spec |
+| `scopes.forbidden_paths` | Rutas protegidas del arnés |
+| `sdd.engine` / `sdd.paths` | Motor OpenSpec y rutas de specs |
+| `sdd.tiers` | Gobernanza graduada (fast_path / standard / core) |
 | `memory.failure_prefix` / `.min_failure_modes` | Memoria |
 | `legacy_terms` | Términos heredados prohibidos |
 | `architecture.features` | Features declaradas |
@@ -114,9 +114,10 @@ fronteras entre módulos: sí.
 → Si la comprobación es repetible y determinista: sí. Si es juicio humano: no,
 documenta el criterio en `context/`.
 
-**¿Componente o proceso?**
-→ Componente si existe por sí mismo. Proceso si describe cómo colaboran dos o
-más componentes.
+**¿Cómo tramito un cambio?**
+→ ¿Trivial o bugfix (<3 archivos)? **Fast-Path** (código + test + preflight).
+→ ¿Nueva feature o cambio de contrato? **OpenSpec** (`propose-change` → `consolidate-change`).
+→ ¿Cambio de arquitectura? **OpenSpec + ADR**.
 
 ---
 

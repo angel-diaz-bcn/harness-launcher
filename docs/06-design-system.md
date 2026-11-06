@@ -37,8 +37,8 @@ Con tokens, un cambio visual es un cambio de dato con una única fuente.
 ### Cadena de autoridad
 
 ```
-tokens.json  →  tema del código  →  componente  →  spec de UI  →  test
-   valores          clases            DS-*          design_ref     TC-*
+tokens.json  →  tema del código  →  componente  →  módulo de UI  →  test
+   valores          clases            DS-*          MOD-ui         TC-*
 ```
 
 Cada eslabón es verificable:

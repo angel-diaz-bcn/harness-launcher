@@ -34,7 +34,7 @@ La sección §1 define un orden de lectura que va de lo general a lo concreto:
 
 ```
 identidad → gobernanza → producto → arquitectura → diseño
-   → scope de la tarea → framework SDD → spec activa → fallos conocidos
+   → scope de la tarea → framework SDD → módulo vivo y propuesta activa → fallos conocidos
 ```
 
 Es **just-in-time**: se carga lo necesario para la tarea, en ese orden, no todo

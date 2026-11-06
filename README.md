@@ -1,5 +1,11 @@
 # 🚀 AI Harness Launcher
 
+[![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-Passing-2ea44f?logo=github-actions&logoColor=white)](.github/workflows/harness-ci.yml)
+[![GitLab CI](https://img.shields.io/badge/GitLab_CI-Ready-fc6d26?logo=gitlab&logoColor=white)](.gitlab-ci.yml)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)](requirements.txt)
+[![Methodology](https://img.shields.io/badge/Methodology-OpenSpec-purple)](docs/05-sdd.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 > **Entorno de desarrollo asistido por IA gobernado, determinista y auditable.**  
 > Este repositorio cumple una **doble función**: es una **guía didáctica y de referencia canónica** sobre cómo diseñar y gobernar un arnés de IA profesional, y al mismo tiempo es una **herramienta generadora (launcher)** capaz de montar un arnés a medida para cualquier stack y producto real mediante la skill `bootstrap-harness`.
 
@@ -11,12 +17,16 @@
 2. [Los dos propósitos del repositorio](#-los-dos-propósitos-del-repositorio)
 3. [Arquitectura conceptual: cómo funciona el arnés](#-arquitectura-conceptual-cómo-funciona-el-arnés)
 4. [Estructura del proyecto y zonas](#-estructura-del-proyecto-y-zonas)
-5. [Guía de uso: dos formas de utilizarlo](#-guía-de-uso-dos-formas-de-utilizarlo)
+5. [Ejemplo práctico paso a paso (De la idea a producción)](#-ejemplo-práctico-paso-a-paso-de-la-idea-a-producción)
+6. [Guía de uso: dos formas de utilizarlo](#-guía-de-uso-dos-formas-de-utilizarlo)
    - [Modo A: didáctico / estudio y referencia](#modo-a-didáctico--estudio-y-referencia)
    - [Modo B: lanzador de un proyecto real (`bootstrap-harness`)](#modo-b-lanzador-de-un-proyecto-real-bootstrap-harness)
-6. [Las puertas de calidad (*quality gates*)](#-las-puertas-de-calidad-quality-gates)
-7. [Catálogo de *skills* y flujos de trabajo (*workflows*)](#-catálogo-de-skills-y-flujos-de-trabajo-workflows)
-8. [Reglas de oro no negociables](#-reglas-de-oro-no-negociables)
+7. [Las puertas de calidad (*quality gates*)](#-las-puertas-de-calidad-quality-gates)
+8. [Catálogo de *skills* y flujos de trabajo (*workflows*)](#-catálogo-de-skills-y-flujos-de-trabajo-workflows)
+9. [Reglas de oro no negociables](#-reglas-de-oro-no-negociables)
+10. [Integración Continua Dual (GitHub & GitLab)](#-integración-continua-dual-github--gitlab)
+11. [Cómo Contribuir](#-cómo-contribuir)
+12. [Licencia](#-licencia)
 
 ---
 
@@ -26,7 +36,7 @@ Cuando se trabaja con modelos de IA (Antigravity, Claude, Cline, Roo-Code, Curso
 
 El **arnés de IA** es el sistema de contención, contexto y validación que rodea al agente:
 - **No es un prompt:** es un conjunto de archivos normativos, contratos de límites de escritura y scripts ejecutables que auditan el código en cada paso.
-- **SDD-first (*spec-driven development*):** se prohíbe escribir una sola línea de código en producción sin una especificación previa aprobada (`.spec.md`).
+- **OpenSpec-First (Delta-Driven Development):** se prohíbe programar nuevas features sin una propuesta previa aislada en `changes/` consolidada en su módulo vivo maestro, habilitando a su vez un canal *Fast-Path* para bugfixes y parches de <3 archivos.
 - **Verificación determinista:** el código no se aprueba por "opinión", sino porque supera puertas de validación automatizadas en Python.
 
 ---
@@ -40,7 +50,7 @@ El **arnés de IA** es el sistema de contención, contexto y validación que rod
 │      1. PROPÓSITO DIDÁCTICO      │       2. PROPÓSITO LAUNCHER         │
 │         (docs/ + context/)       │         (bootstrap-harness)         │
 │                                  │                                     │
-│  📖 Explica el "por qué":        │  ⚡ Transforma la base canónica:    │
+│  📖 Explica el "por qué":       │  ⚡ Transforma la base canónica:    │
 │  - Teoría completa del arnés.    │  - Lee tu PRD o idea de negocio.    │
 │  - Cómo gobernar un agente.      │  - Genera tu arnés a medida.        │
 │  - 14 capítulos estructurados.   │  - Configura scopes y validadores.  │
@@ -67,10 +77,11 @@ flowchart TD
         Router --> Memory[".ai-harness/memory/ (modos de fallo + ADRs)"]
     end
     
-    subgraph SDD["2. Especificación (SDD-first)"]
-        Context --> Spec[".ai-harness/sdd/ (CMP-NN / PRC-NN)"]
-        Spec --> Story["user_story.md (criterios BDD)"]
-        Spec --> Contract["Contratos CT-* e invariantes BR-*"]
+    subgraph SDD["2. Especificación OpenSpec (Delta-first)"]
+        Context --> Modules[".ai-harness/sdd/modules/ (Living Specs)"]
+        Modules --> Changes[".ai-harness/sdd/changes/ (Deltas activos)"]
+        Changes --> Tasks["tasks.md (checklist de tareas)"]
+        Changes --> Contract["Contratos CT-* e invariantes BR-*"]
     end
     
     subgraph Code["3. Producción y pruebas"]
@@ -94,7 +105,7 @@ flowchart TD
 - **`harness.config.yaml`:** es la **única fuente de verdad estructural**. Ningún script asume nombres de carpetas ni prefijos: todo se lee de este archivo.
 - **`.ai-harness/context/`:** 12 documentos normativos que definen identidad, arquitectura, estándares de código, pruebas, privacidad y framework SDD.
 - **`.ai-harness/scopes/`:** fronteras modulares (`block_*.md`). Cada módulo define qué rutas posee, cuáles le están prohibidas y qué API pública expone.
-- **`.ai-harness/sdd/`:** especificaciones canónicas de componentes (`CMP-NN`) y procesos (`PRC-NN`) con trazabilidad completa:  
+- **`.ai-harness/sdd/`:** arquitectura OpenSpec con módulos vivos consolidados (`modules/`), propuestas activas (`changes/`) y memoria histórica (`archive/`) con trazabilidad completa:  
   `FR-* (Requisito) → CT-* (Contrato) → archivo::símbolo → TC-* (Prueba)`.
 
 ---
@@ -123,10 +134,11 @@ El repositorio distingue claramente dos zonas:
 │   ├── context/                       # 12 documentos normativos maestros
 │   ├── design-system/                 # tokens.json + 6 especificaciones de diseño
 │   ├── scopes/                        # Límites de escritura (block_*.md)
-│   ├── sdd/                           # Taxonomía SDD, plantillas y specs activas
-│   │   ├── 1_COMPONENTS/              # Componentes (bootstrap, domain, ui)
-│   │   ├── 2_PROCESSES/               # Procesos y flujos orquestados
-│   │   └── templates/                 # Plantillas canónicas de CMP y PRC
+│   ├── sdd/                           # Arquitectura OpenSpec y plantillas
+│   │   ├── modules/                   # Módulos vivos consolidados (Living Specs)
+│   │   ├── changes/                   # Propuestas activas (deltas en revisión)
+│   │   ├── archive/                   # Histórico de cambios completados
+│   │   └── templates/                 # Plantillas canónicas (module, proposal, tasks)
 │   ├── memory/                        # failure_modes.md (antipatrones) + ADRs
 │   ├── fixtures/                      # Datos deterministas para pruebas
 │   ├── input/                         # Buzón para depositar PRDs o briefs de entrada
@@ -139,17 +151,32 @@ El repositorio distingue claramente dos zonas:
 
 ---
 
+## 🎬 Ejemplo práctico paso a paso (De la idea a producción)
+
+> 📖 **Capítulo de referencia completa:** [docs/13-ejemplo-practico-paso-a-paso.md](file:///c:/Users/angel/Documents/DEV/harness-launcher/docs/13-ejemplo-practico-paso-a-paso.md)
+
+¿Cómo se vive en el día a día un desarrollo con este arnés?
+
+1. **La Petición:** El desarrollador pide añadir *Google OAuth* al módulo de autenticación existente.
+2. **La Propuesta aislada (Delta OpenSpec):** El agente ejecuta `/propose-change.md` y genera `changes/[YYYY-MM]-add-google-oauth/proposal.md` y `tasks.md`. No toca una sola línea de código fuente.
+3. **Revisión en 2 minutos:** El humano abre `proposal.md`, revisa qué se añade (`+`), qué contratos se modifican (`~`) y aprueba el delta conceptual sin ruido técnico.
+4. **Consolidación:** Con `/consolidate-change.md`, la verdad viva de `modules/auth.md` se actualiza y la propuesta pasa a `archive/`.
+5. **Implementación y Quality Gates:** El agente programa el código respetando los límites de `scopes/block_domain.md`, y antes de publicar se ejecutan `harness-validator`, `preflight` y `sync-sdd`.
+
+---
+
 ## 🛠️ Guía de uso: dos formas de utilizarlo
 
 ### Modo A: didáctico / estudio y referencia
 
 Si deseas comprender la ingeniería detrás de un arnés de IA gobernado:
 
-1. Abre [`docs/00-indice.md`](file:///docs/00-indice.md) y elige tu itinerario:
+1. Abre [`docs/00-indice.md`](file:///c:/Users/angel/Documents/DEV/harness-launcher/docs/00-indice.md) y elige tu itinerario:
    - **Ruta corta (30 min):** `01-que-es-un-harness.md` → `02-agents-md.md` → `cheatsheet.md`.
-   - **Ruta operativa (2 horas):** `01` a `05` → `08-skills-y-validadores.md` → `cheatsheet.md`.
-   - **Ruta completa (4 horas):** Los 13 capítulos en orden para dominar la arquitectura SDD y gobernanza.
-2. Examina las plantillas canónicas en `.ai-harness/sdd/templates/` para entender la anatomía de una especificación sin vacíos ni asunciones.
+   - **Ruta operativa (2 horas):** `01` a `05` → `08-skills-y-validadores.md` → `13-ejemplo-practico-paso-a-paso.md` → `cheatsheet.md`.
+   - **Ruta completa (4 horas):** Los 14 capítulos (00 a 13) en orden para dominar la arquitectura OpenSpec y gobernanza de agentes.
+2. Consulta el **caso práctico real** en [`docs/13-ejemplo-practico-paso-a-paso.md`](file:///c:/Users/angel/Documents/DEV/harness-launcher/docs/13-ejemplo-practico-paso-a-paso.md).
+3. Examina las plantillas canónicas en `.ai-harness/sdd/templates/` para entender la anatomía de una especificación viva y un delta de propuesta.
 
 ---
 
@@ -201,7 +228,7 @@ python .ai-harness/skills/sync-sdd/runner.py
 |---|---|---|
 | **`harness-validator`** | Integridad del arnés | Documentos ausentes, tags `<PROYECTO>` sin rellenar, specs sin historia BDD o frontmatter inválido. |
 | **`preflight`** | Calidad del código fuente | Fallo de pruebas, imports cruzados entre features privadas, uso de `any`/`dynamic`, estilos literales o paquetes vetados. |
-| **`sync-sdd`** | Alineación spec ↔ código | Specs aprobadas cuyo target no existe en disco (`MISSING`) o cuyo código ha variado sin actualizar la baseline (`DIVERGED`). |
+| **`sync-sdd`** | Alineación spec ↔ código | Módulos vivos cuyo target no existe en disco (`MISSING`), código que diverge de la baseline (`DIVERGED`) o propuestas con tareas pendientes. |
 
 ---
 
@@ -214,9 +241,9 @@ Todas las capacidades del arnés están empaquetadas como ***skills* ejecutables
 | `/bootstrap-harness.md` | Inicializa y adapta el arnés al producto real | `python .ai-harness/skills/bootstrap-harness/runner.py` |
 | `/harness-validator.md` | Audita la coherencia y normativa del arnés | `python .ai-harness/skills/harness-validator/runner.py` |
 | `/preflight.md` | Control de calidad de código y arquitectura | `python .ai-harness/skills/preflight/runner.py` |
-| `/sync-sdd.md` | Comprueba paridad entre spec y disco | `python .ai-harness/skills/sync-sdd/runner.py` |
-| `/create-component-sdd.md` | Crea esqueleto canónico de componente (`CMP-NN`) | `python .ai-harness/skills/create-component-sdd/runner.py` |
-| `/create-process-sdd.md` | Crea esqueleto canónico de proceso (`PRC-NN`) | `python .ai-harness/skills/create-process-sdd/runner.py` |
+| `/sync-sdd.md` | Audita módulos vivos y tareas OpenSpec | `python .ai-harness/skills/sync-sdd/runner.py` |
+| `/propose-change.md` | Crea una propuesta de cambio (delta OpenSpec) | `python .ai-harness/skills/propose-change/runner.py` |
+| `/consolidate-change.md` | Consolida y archiva un cambio aprobado | `python .ai-harness/skills/consolidate-change/runner.py` |
 | `/launch-app.md` | Arranca la aplicación según su stack | `python .ai-harness/skills/launch-app/runner.py` |
 | `/git-publish.md` | Publicación protegida en Git bajo demanda | `python .ai-harness/skills/git-publish/runner.py push` |
 | `/list-skills.md` | Inventario de capacidades registradas | Lee `.ai-harness/skills/registry.yaml` |
@@ -225,10 +252,36 @@ Todas las capacidades del arnés están empaquetadas como ***skills* ejecutables
 
 ## ⚖️ Reglas de oro no negociables
 
-1. **SDD-first obligatorio:** ninguna línea de código de producción se escribe sin una spec previa en estado `APPROVED`.
-2. **Cero invención (*zero-assumption*):** si falta un dato de producto o requerimiento, se registra como pregunta abierta en §15/§16 de la spec y se detiene la implementación.
+1. **OpenSpec-first obligatorio:** ninguna funcionalidad o modificación de regla se programa sin una propuesta aislada previa en `changes/` consolidada en el módulo maestro (salvo parches bajo el protocolo Fast-Path).
+2. **Cero invención (*zero-assumption*):** si falta un dato de producto o requerimiento, se registra como pregunta abierta en la propuesta y se detiene la implementación hasta aclararlo.
 3. **Una sola fuente de verdad:** cada regla vive en un único archivo; el resto la referencia. Prohibido duplicar normativas.
 4. **Configuración estructural primero:** cualquier cambio de capas, scopes o prefijos empieza en `harness.config.yaml`.
 5. **Calidad inquebrantable:** prohibido usar `--no-verify` o silenciar tests para forzar un commit. Los fallos se resuelven en su causa raíz.
 6. **Privacidad por defecto:** cero telemetría no consentida ni librerías de rastreo comercial.
 7. **Publicación bajo demanda:** `git push` solo se ejecuta ante una instrucción explícita del usuario.
+
+---
+
+## 🌐 Integración Continua Dual (GitHub & GitLab)
+
+El arnés está diseñado para operar con paridad total tanto en **GitHub** como en **GitLab** (Cloud o Self-Hosted):
+
+| Característica | GitHub Actions | GitLab CI/CD |
+|---|---|---|
+| **Archivo de Pipeline** | [`.github/workflows/harness-ci.yml`](.github/workflows/harness-ci.yml) | [`.gitlab-ci.yml`](.gitlab-ci.yml) |
+| **Plantilla de Revisión** | [`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) | [`.gitlab/merge_request_templates/Default.md`](.gitlab/merge_request_templates/Default.md) |
+| **Plantillas de Issues** | `.github/ISSUE_TEMPLATE/` | `.gitlab/issue_templates/` |
+| **Quality Gates en CI** | `harness-validator` + `preflight` + `sync-sdd` | `harness-validator` + `preflight` + `sync-sdd` |
+| **Blindaje (Tamper-Resistance)** | Bloqueo en PRs si se alteran árbitros | Bloqueo en MRs si se alteran árbitros |
+
+---
+
+## 🤝 Cómo Contribuir
+
+Las contribuciones son bienvenidas tanto de desarrolladores humanos como de agentes de IA. Consulta nuestra [Guía de Contribución (CONTRIBUTING.md)](CONTRIBUTING.md) para conocer el protocolo de ramas, propuestas OpenSpec y validación local obligatoria.
+
+---
+
+## 📄 Licencia
+
+Este proyecto se distribuye bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.

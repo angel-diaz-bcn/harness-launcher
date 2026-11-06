@@ -20,8 +20,8 @@ con la salida. Separarlos evita dos problemas:
 |---|---|---|
 | `bootstrap-harness.md` | `/bootstrap-harness.md` | Inicialización interactiva del arnés para un nuevo proyecto |
 | `list-skills.md` | `/list-skills.md` | Inventario real de skills, sin listas hardcodeadas |
-| `create-component-sdd.md` | `/create-component-sdd.md` | Esqueleto de spec de componente |
-| `create-process-sdd.md` | `/create-process-sdd.md` | Esqueleto de spec de proceso |
+| `propose-change.md` | `/propose-change.md` | Propuesta de cambio aislada (delta OpenSpec) |
+| `consolidate-change.md` | `/consolidate-change.md` | Consolidación y archivo de spec aprobada |
 | `harness-validator.md` | `/harness-validator.md` | Validación estructural del arnés |
 | `preflight.md` | `/preflight.md` | Validación de código y arquitectura |
 | `sync-sdd.md` | `/sync-sdd.md` | Deriva spec ↔ implementación |

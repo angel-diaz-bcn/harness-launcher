@@ -16,16 +16,28 @@ Antes de leer código, proponer cambios o escribir archivos, cargar en este orde
 4. `.ai-harness/context/architecture_rules.md` — fronteras e invariantes.
 5. `.ai-harness/context/ui-design-system.md` y `.ai-harness/design-system/README.md`.
 6. `.ai-harness/scopes/block_*.md` — scope del área que se va a tocar.
-7. `.ai-harness/context/sdd_framework.md` — gobernanza SDD y convención `.spec.md`.
-8. La spec `.spec.md` activa, si existe.
+7. `.ai-harness/context/sdd_framework.md` — metodología OpenSpec (modules, changes, archive).
+8. El módulo vivo `.ai-harness/sdd/modules/<modulo>.md` y la propuesta en `changes/` activa, si existe.
 9. `.ai-harness/memory/failure_modes.md` — fallos que no deben repetirse.
 
-Si falta el scope o la spec de la tarea, detenerse y pedir la definición antes
+Si falta el scope o la definición del módulo, detenerse y pedir la definición antes
 de implementar.
 
 ---
 
-## 2. Enrutamiento por tarea
+## 2. Niveles de Cambio y Gobernanza Graduada
+
+Antes de escribir código, clasificar la tarea en uno de los tres niveles:
+
+| Nivel | Cuándo aplica | Requisito SDD | Validación requerida |
+|---|---|---|---|
+| **Fast-Path** | Bugfixes, parches de <3 archivos, ajustes cosméticos | No requiere propuesta formal | Test unitario + `preflight --tier fast` |
+| **Standard** | Nueva funcionalidad, cambio de regla o contrato | Propuesta OpenSpec (`changes/`) | `propose-change` → Revisión humana → `consolidate-change` → Código + tests + `preflight` + `sync-sdd` |
+| **Core** | Cambio de arquitectura, protocolo o persistencia | Propuesta OpenSpec + ADR | Flujo Standard + Registro de ADR en `memory/adr/` |
+
+---
+
+## 3. Enrutamiento por tarea
 
 | Tarea | Fuente de verdad | Herramienta |
 |---|---|---|
@@ -42,35 +54,31 @@ de implementar.
 | Plataformas | `context/platform_matrix.md` | — |
 | Testing | `context/testing_guidelines.md` | — |
 | Límites de escritura | `scopes/block_*.md` | — |
-| Especificaciones | `sdd/` y `sdd/templates/README.md` | `/create-component-sdd.md`, `/create-process-sdd.md` |
+| Módulos consolidados | `.ai-harness/sdd/modules/` | — |
+| Propuesta de cambio (delta) | `.ai-harness/sdd/changes/` | `/propose-change.md` |
+| Consolidación de cambio | `.ai-harness/sdd/archive/` | `/consolidate-change.md` |
 | Validación de producto | `context/architecture_rules.md` §6 | `/preflight.md` |
 | Validación del arnés | `context/harness_governance.md` §8 | `/harness-validator.md` |
-| Sincronización spec↔código | `sdd/templates/README.md` | `/sync-sdd.md` |
+| Auditoría spec↔código | `.ai-harness/sdd/` | `/sync-sdd.md` |
 | Arranque de la app | `context/platform_matrix.md` | `/launch-app.md` |
 | Publicación Git | `.clinerules/workflows/git-publish.md` | `/git-publish.md` solo bajo demanda |
 
-Los workflows se descubren en `.clinerules/workflows/`; el nombre del comando
-incluye la extensión `.md`. Si no aparecen en el menú `/`, recargar la ventana.
-
 ---
 
-## 3. Reglas de trabajo
+## 4. Reglas de trabajo
 
-- **SDD-First:** no se escribe código de producción sin spec aprobada en
-  `.ai-harness/sdd/`.
-- **Sin invención:** si falta un dato, se registra como pregunta abierta y se
-  detiene la implementación.
-- **Configuración primero:** un cambio de estructura del arnés empieza en
-  `harness.config.yaml`, no en el código de un validador.
+- **OpenSpec-First:** ningún cambio de feature o contrato se programa sin propuesta aislada previa en `changes/`.
+- **Sin invención:** si falta un dato, se registra como pregunta abierta y se detiene la implementación.
+- **Configuración primero:** un cambio de estructura del arnés empieza en `harness.config.yaml`, no en el código de un validador.
+- **Inmutabilidad del arnés:** el agente no debe modificar scripts en `.ai-harness/skills/`, `.ai-harness/context/` ni `harness.config.yaml` durante tareas de desarrollo de producto.
 - **Privacidad:** cero telemetría de usuario.
 - **Foco universal:** todo control debe ser navegable con teclado o D-Pad.
 - **Diseño:** solo tokens de `design-system/tokens.json`; prohibido HEX literal.
 - **Git:** `git push` solo con instrucción explícita del usuario.
-- **Sin residuos:** no introducir referencias ni tecnologías de otro proyecto.
 
 ---
 
-## 4. Cierre de tarea
+## 5. Cierre de tarea
 
 Antes de declarar una tarea terminada:
 
@@ -78,13 +86,11 @@ Antes de declarar una tarea terminada:
 2. Ejecutar `python .ai-harness/skills/preflight/runner.py`.
 3. Ejecutar `python .ai-harness/skills/sync-sdd/runner.py`.
 4. Corregir la causa raíz de cualquier fallo; no reejecutar a ciegas.
-5. Actualizar la spec y el mapa de implementación si cambió el comportamiento.
-
-Los criterios completos están en `context/harness_governance.md` §11.
+5. Actualizar el módulo maestro y el mapa de implementación si cambió el comportamiento.
 
 ---
 
-## 5. Documentación del arnés
+## 6. Documentación del arnés
 
 El directorio `docs/` explica qué es cada pieza, por qué existe y qué valida.
 No forma parte del núcleo copiable: al trasladar el arnés a un proyecto nuevo

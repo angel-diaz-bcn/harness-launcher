@@ -1,128 +1,92 @@
-# 05 — SDD: especificaciones y trazabilidad
+# 05 — SDD: Especificaciones Vivas y Metodología OpenSpec
 
 ## Qué es
 
-SDD (Spec-Driven Development) es el flujo por el que **primero se especifica,
-después se contrata, después se implementa y finalmente se verifica**. La spec
-es el contrato ejecutable: si el código hace algo que no está en la spec, el
-código está fuera de contrato.
+El subsistema SDD (Spec-Driven Development) adopta el estándar **OpenSpec (Delta-Driven Development)**: un ciclo donde las especificaciones nunca envejecen ni se fragmentan en cientos de archivos obsoletos.
 
-## Por qué existe
+El principio fundamental es la separación entre el **Estado Consolidado Vivo** (`modules/`) y los **Deltas de Cambio** (`changes/`).
 
-Sin specs, el código es la única fuente de verdad. Eso implica:
+---
 
-- nadie sabe si un comportamiento es intencional o un accidente;
-- los cambios rompen cosas que nadie documentó;
-- el agente rellena los huecos inventando;
-- las pruebas verifican implementación, no requisitos.
+## Por qué superamos la dicotomía Componentes vs Procesos
 
-La spec separa **qué** (requisito), **cómo** (contrato), **dónde** (target) y
-**cómo se comprueba** (test).
+En el enfoque anterior (`1_COMPONENTS` y `2_PROCESSES`), la especificación de una misma funcionalidad quedaba artificialmente dividida en carpetas separadas (por ejemplo, el repositorio de autenticación en un componente y el login en un proceso).
 
-## Archivos implicados
+En **OpenSpec**:
+- Cada capacidad del sistema vive en un único archivo maestro en `modules/<modulo>.md` (ej. `auth.md`).
+- El módulo contiene sus entidades, contratos (`CT-*`), reglas de negocio (`BR-*`), flujos de ejecución y mapa de implementación en código.
+- Los cambios nunca tocan directamente la spec maestra sin una propuesta previa: se presentan como **deltas aislados** en `changes/` que el desarrollador puede revisar y validar en solo 2 minutos.
 
-| Ruta | Contenido |
-|---|---|
-| `sdd/templates/TEMPLATE_COMPONENT_SDD.md` | Plantilla de componente |
-| `sdd/templates/TEMPLATE_PROCESS_SDD.md` | Plantilla de proceso |
-| `sdd/templates/README.md` | Convención completa |
-| `sdd/1_COMPONENTS/<capa>/<ID>-<slug>/` | Spec e historia de componente |
-| `sdd/2_PROCESSES/<ID>-<slug>/` | Spec e historia de proceso |
+---
 
-## Mecánica interna
+## Estructura de Directorios
 
-### Dos documentos por unidad
-
-| Archivo | Responde a | No contiene |
-|---|---|---|
-| `user_story.md` | Por qué, para quién y qué resultado | Contratos ni código |
-| `<ID>-<slug>.spec.md` | Qué, cómo, con qué tipos y pruebas | Narrativa de producto |
-
-### Anatomía de la spec
-
-1. Front matter machine-readable (validado campo a campo).
-2. Contexto y problema.
-3. Requisitos `FR-*` (componentes) o pasos `ST-*` (procesos).
-4. Reglas `BR-*` e invariantes `INV-*`.
-5. Contratos `CT-*` con tipos completos.
-6. Errores y estados.
-7. Escenarios BDD.
-8. **Mapa de implementación**.
-9. Definition of Done y decisiones.
-
-### Trazabilidad
-
-```
-FR-* / ST-*  →  CT-*  →  archivo::símbolo  →  TC-*  →  estado
+```text
+.ai-harness/sdd/
+├── modules/                        # Living Specs: la verdad actual consolidada
+│   ├── README.md                   # Catálogo de capacidades
+│   ├── auth.md                     # Capacidad viva de autenticación
+│   └── billing.md                  # Capacidad viva de facturación
+│
+├── changes/                        # Deltas activos (en revisión o implementación)
+│   └── [YYYY-MM]-[slug]/
+│       ├── proposal.md             # Qué cambia del módulo maestro (+ / ~ / -)
+│       └── tasks.md                # Checklist de tareas técnicas [ ] / [x]
+│
+├── archive/                        # Memoria histórica inmutable
+│   └── [YYYY-MM]-[slug]/           # Cambios ya consolidados e implementados
+│
+└── templates/                      # Plantillas canónicas
+    ├── module.template.md
+    ├── proposal.template.md
+    └── tasks.template.md
 ```
 
-Reglas asociadas:
+---
 
-- Un requisito sin implementación y sin prueba no está terminado.
-- Un símbolo público sin entrada en el mapa está fuera de spec.
-- El comentario `/// Spec: <ID> / <FR|ST>` ata el código a su requisito.
-- `sync-sdd` compara spec y target contra un baseline y detecta deriva.
+## El Flujo de Trabajo en 4 Pasos
 
-### Estados
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Dev as Desarrollador
+    participant Agent as Agente IA
+    participant SDD as sdd/ (OpenSpec)
+    participant Code as Código (src/ o lib/)
 
-| Estado | Implementación permitida |
-|---|---|
-| `DRAFT` | No |
-| `APPROVED` | Sí |
-| `SUPERSEDED` | Solo mantenimiento |
-
-## Qué valida el arnés
-
-`check_sdd` aplica, por spec:
-
-| Regla | Qué detecta |
-|---|---|
-| `SDD-INVALID-SPEC-FILENAME` | Nombre fuera del patrón `<PREFIX>-NN-<slug>.spec.md` |
-| `SDD-MISSING-FRONTMATTER` | Falta un campo obligatorio del front matter |
-| `SDD-SPEC-ID-MISMATCH` | `spec_id` no coincide con el nombre del archivo |
-| `SDD-INVALID-STATUS` | Estado fuera de `DRAFT`/`APPROVED`/`SUPERSEDED` |
-| `SDD-MISSING-APPROVAL-DATE` / `-OWNER` | `APPROVED` sin fecha o sin responsable |
-| `SDD-MISSING-SUPERSEDED-BY` | `SUPERSEDED` sin reemplazo declarado |
-| `SDD-MISSING-LAYER` / `SDD-INVALID-LAYER` | Capa ausente o inválida en componentes |
-| `SDD-MISSING-USER-STORY` | No hay `user_story.md` junto a la spec |
-| `SDD-TARGET-MISSING` | El `target` de una spec aprobada no existe |
-| `SDD-MISSING-TRACEABILITY` | Faltan `FR/ST`, `CT` o `TC` |
-| `SDD-MISSING-IMPLEMENTATION-MAP` | No existe la sección de mapa |
-
-`sync-sdd` añade el estado real de implementación: `N/A`, `MISSING`, `PRESENT`
-o `DIVERGED`.
-
-## Qué rompe si falta
-
-- El agente implementa "lo que parece razonable" y lo llama terminado.
-- Los tests verifican el código que hay, no el comportamiento acordado.
-- Cualquier refactor es una ruleta: no hay contrato que respetar.
-- Las revisiones se convierten en arqueología.
-
-## Anti-patrón
-
-Specs que describen la implementación:
-
-```markdown
-## FR-01
-Crear la clase `CatalogRepositoryImpl` con un método `fetch()` que use Dio.
+    Dev->>Agent: 1. Pide un cambio ("añadir login con Google")
+    Agent->>SDD: Genera propuesta en changes/<id>/ (proposal.md + tasks.md)
+    Dev-->>Dev: 2. Revisa el delta en 2 min
+    Dev->>SDD: 3. Consolida propuesta (/consolidate-change)
+    Agent->>Code: 4. Implementa código y tests siguiendo tasks.md
 ```
 
-Eso es una decisión de implementación, no un requisito. La spec debe decir qué
-comportamiento se garantiza; el cómo pertenece al diseño y puede cambiar sin
-romper el contrato.
+1. **Paso 1: Proponer el cambio (`/propose-change`):**
+   El agente lee `modules/auth.md` y genera exclusivamente el delta en `changes/[YYYY-MM]-add-oauth/proposal.md` y la lista técnica `tasks.md`.
+2. **Paso 2: Revisión ágil (2 minutos):**
+   El desarrollador revisa solo el diff conceptual. Si algo no encaja, se ajusta el Markdown antes de escribir una sola línea de código.
+3. **Paso 3: Consolidar la spec (`/consolidate-change`):**
+   Se aplican los cambios al archivo maestro `modules/auth.md` y la propuesta se traslada a `archive/`.
+4. **Paso 4: Implementar el código:**
+   El agente o programador implementa la funcionalidad y los tests guiado por `tasks.md`.
 
-## Flujo de trabajo
+---
 
-1. `create-component-sdd` o `create-process-sdd` genera el esqueleto.
-2. Se completa `user_story.md` (por qué).
-3. Se completa la spec (qué y cómo).
-4. Se revisa el checklist de `templates/README.md`.
-5. Se pasa a `APPROVED` con fecha y responsable.
-6. Se implementa, se prueban los `TC-*`.
-7. `sync-sdd --baseline` fija el estado de referencia.
+## Gobernanza Graduada (Fast-Path vs Standard vs Core)
 
-## Referencias
+No todos los cambios ameritan la misma burocracia. El arnés adapta su exigencia:
 
-- `08-skills-y-validadores.md` — cómo se ejecutan las comprobaciones.
-- `11-cierre-y-auditoria.md` — criterio de cierre.
+| Nivel | Cuándo aplica | Exigencia SDD | Verificación |
+|---|---|---|---|
+| **Fast-Path** | Hotfixes, tweaks visuales, parches de <3 archivos | Sin propuesta previa obligatoria | Test unitario + `preflight --tier fast` |
+| **Standard** | Nuevas funcionalidades, reglas o contratos | Propuesta OpenSpec completa | `propose-change` → `consolidate-change` → `sync-sdd` + `preflight` |
+| **Core** | Cambios arquitecturales, base de datos o protocolos | Propuesta OpenSpec + ADR | Nivel Standard + Registro de ADR en `memory/adr/` |
+
+---
+
+## Auditoría Determinista (`sync-sdd`)
+
+El validador `python .ai-harness/skills/sync-sdd/runner.py` audita automáticamente:
+1. Que los módulos vivos en `modules/` tengan su contrapartida real en el código (`target_path`).
+2. Que no existan tareas pendientes (`[ ]`) en propuestas activas antes de cerrar una entrega.
+3. Que no haya divergencia entre el código implementado y la línea base registrada.

@@ -13,12 +13,12 @@ tokens.json → clase del tema → componente → spec → test
 
 | Token | Clase del tema | Widget de ejemplo | Spec | Test |
 |---|---|---|---|---|
-| `color.surface.canvas` | `AppColors.surfaceCanvas` | `Scaffold` | `<CMP-NN>` | `<TC-NN>` |
-| `color.text.primary` | `AppColors.textPrimary` | `Text` | `<CMP-NN>` | `<TC-NN>` |
-| `color.accent.base` | `AppColors.accent` | `FilledButton` | `<CMP-NN>` | `<TC-NN>` |
-| `space.md` | `AppSpacing.md` | `Padding` | `<CMP-NN>` | `<TC-NN>` |
-| `radius.md` | `AppRadius.md` | `Container` | `<CMP-NN>` | `<TC-NN>` |
-| `type.body.size` | `AppTypography.body` | `Text` | `<CMP-NN>` | `<TC-NN>` |
+| `color.surface.canvas` | `AppColors.surfaceCanvas` | `Scaffold` | `MOD-ui` | `<TC-NN>` |
+| `color.text.primary` | `AppColors.textPrimary` | `Text` | `MOD-ui` | `<TC-NN>` |
+| `color.accent.base` | `AppColors.accent` | `FilledButton` | `MOD-ui` | `<TC-NN>` |
+| `space.md` | `AppSpacing.md` | `Padding` | `MOD-ui` | `<TC-NN>` |
+| `radius.md` | `AppRadius.md` | `Container` | `MOD-ui` | `<TC-NN>` |
+| `type.body.size` | `AppTypography.body` | `Text` | `MOD-ui` | `<TC-NN>` |
 
 ## 2. Reglas de mapeo
 

@@ -17,7 +17,7 @@ sombrero lleva.
 ## 2. Principios de decisión
 
 1. **Contratos antes que implementación:** ningún comportamiento se codifica sin
-   estar descrito en una spec aprobada.
+   estar descrito en una propuesta aprobada o módulo consolidado (salvo parches bajo Fast-Path).
 2. **Una sola fuente de verdad:** cada regla vive en un único archivo; el resto
    la referencia.
 3. **Evidencia sobre suposición:** las decisiones se justifican con el
@@ -31,7 +31,7 @@ sombrero lleva.
 ## 3. Jerarquía de autoridad
 
 1. `context/` y `scopes/`.
-2. La spec `.spec.md` aprobada.
+2. La spec del módulo consolidado en `modules/` y la propuesta en `changes/`.
 3. Los contratos y el código.
 4. La documentación auxiliar.
 
@@ -40,7 +40,7 @@ detiene el cambio.
 
 ## 4. Límites no negociables
 
-- Sin código de producción sin spec aprobada.
+- Sin código de producción sin propuesta consolidada o protocolo Fast-Path.
 - Sin reglas duplicadas entre archivos.
 - Sin valores visuales literales fuera de la capa de tema.
 - Sin secretos ni credenciales en el repositorio.
