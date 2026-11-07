@@ -1,7 +1,7 @@
 """
 Template-Driven Context Generator: Genera los 12 documentos de .ai-harness/context/
-utilizando los archivos Markdown existentes en el arnés como plantillas maestras y sustituyendo
-únicamente los datos recuperados del proyecto real (o fusionando inteligentemente overrides de IA).
+utilizando las plantillas maestras del lanzador y garantizando soberanía e idempotencia
+cuando se suministran especificaciones personalizadas (custom_context_overrides).
 """
 
 from __future__ import annotations
@@ -16,8 +16,10 @@ class ContextGenerator:
 
     def __init__(self, manifest: BootstrapManifest, harness_dir: Path | None = None) -> None:
         self.manifest = manifest
-        self.harness_dir = Path(harness_dir).resolve() if harness_dir else Path(__file__).resolve().parents[3]
-        self.context_template_dir = self.harness_dir / "context"
+        # Las plantillas canónicas siempre se cargan desde el núcleo del lanzador para evitar leer archivos ya mutados
+        launcher_root = Path(__file__).resolve().parents[3]
+        self.canonical_template_dir = launcher_root / "context"
+        self.harness_dir = Path(harness_dir).resolve() if harness_dir else launcher_root
 
     def generate_all(self) -> dict[str, str]:
         docs = [
@@ -37,25 +39,19 @@ class ContextGenerator:
 
         result: dict[str, str] = {}
         for doc in docs:
-            template_path = self.context_template_dir / doc
+            # 1. Leer siempre la plantilla canónica limpia
+            template_path = self.canonical_template_dir / doc
             base_template = ""
             if template_path.exists():
                 base_template = template_path.read_text(encoding="utf-8", errors="ignore")
 
-            # 1. Si la IA preparó un override específico en el manifiesto
-            if doc in self.manifest.custom_context_overrides:
+            # 2. Si existe un override específico en el manifiesto
+            if doc in self.manifest.custom_context_overrides and self.manifest.custom_context_overrides[doc].strip():
                 override_text = self.manifest.custom_context_overrides[doc].strip()
-
-                # Si el override es exhaustivo (> 40 líneas), usarlo directamente
-                if len(override_text.splitlines()) >= 40:
-                    result[doc] = self._resolve_common_vars(override_text)
-                    continue
-
-                # Si es un snippet corto (< 40 líneas), fusionarlo con la plantilla maestra
-                result[doc] = self._merge_override_with_template(doc, override_text, base_template)
+                result[doc] = self._handle_custom_override(doc, override_text, base_template)
                 continue
 
-            # 2. De lo contrario, procesar la plantilla Markdown canónica existente
+            # 3. De lo contrario, interpolar la plantilla canónica limpia
             if base_template:
                 result[doc] = self._interpolate_template(doc, base_template)
             else:
@@ -71,13 +67,37 @@ class ContextGenerator:
         content = content.replace("<stack>", f"{m.stack.language} {f'({m.stack.framework})' if m.stack.framework else ''}")
         return content
 
-    def _merge_override_with_template(self, doc_name: str, override_text: str, base_template: str) -> str:
-        """Fusiona snippets de contexto aportados por el usuario con las reglas maestras inmutables."""
+    def _handle_custom_override(self, doc_name: str, override_text: str, base_template: str) -> str:
+        """Procesa un override aportado en el manifiesto garantizando soberanía sin duplicaciones."""
         m = self.manifest
-        interpolated_base = self._interpolate_template(doc_name, base_template)
+        resolved = self._resolve_common_vars(override_text)
 
+        # Caso especial 1: Glosario (Fusión limpia de términos de dominio con términos del arnés)
+        if doc_name == "glossary.md":
+            # Extraer únicamente los bullets o términos definidos en el override
+            domain_lines = []
+            for line in resolved.splitlines():
+                stripped = line.strip()
+                if stripped.startswith(("#", "---")):
+                    continue
+                if stripped.startswith(("-", "*")) or (":" in stripped and len(stripped) > 5):
+                    domain_lines.append(line)
+
+            domain_section = "\n".join(domain_lines).strip()
+            interpolated_base = self._interpolate_template(doc_name, base_template)
+
+            if domain_section:
+                placeholder_regex = r"## 5\. Términos de producto[\s\S]*?(?=## 6|\Z)"
+                replacement = f"## 5. Términos de Dominio y Producto ({m.identity.name})\n\n{domain_section}\n\n"
+                if re.search(placeholder_regex, interpolated_base):
+                    return re.sub(placeholder_regex, replacement, interpolated_base)
+                return f"{interpolated_base}\n\n## 5. Términos de Dominio ({m.identity.name})\n\n{domain_section}\n"
+            return interpolated_base
+
+        # Caso especial 2: Coding Standards (Preserva estándares y añade disciplina transversal si falta)
         if doc_name == "coding_standards.md":
-            return f"""{override_text}
+            if "Estándares Transversales y Disciplina de Calidad" not in resolved:
+                resolved += f"""
 
 ---
 
@@ -90,9 +110,12 @@ class ContextGenerator:
 - **Formateo y Linters:** El código debe superar sin advertencias la ejecución de las herramientas estáticas del lenguaje (`ruff/mypy` en Python, `eslint` en TypeScript/Node, `dart analyze` en Dart).
 - **Pruebas de Regresión:** Todo fallo o bug detectado requiere al menos un test unitario que lo reproduzca antes de aplicar la corrección.
 """
+            return resolved
 
+        # Caso especial 3: Security & Privacy (Preserva reglas y asegura gestión de secretos si falta)
         if doc_name == "security_privacy.md":
-            return f"""{override_text}
+            if "Gestión y Rotación de Secretos" not in resolved:
+                resolved += f"""
 
 ---
 
@@ -100,12 +123,21 @@ class ContextGenerator:
 
 - **Variables de Entorno:** Las credenciales nunca se compilan en imágenes ni se versionan en Git; viven en `.env` local (ignorado en `.gitignore`).
 - **Rotación Inmediata:** Si un secreto se expone accidentalmente, se invalida de inmediato en el proveedor, se rota y se documenta un ADR de remediación.
-- **Principio de Mínimo Privilegio:** Los tokens de APIs externas (Cloudflare, Stripe, DeepSeek, etc.) se generan con permisos acotados exclusivamente a los recursos necesarios.
-- **Auditoría de Dependencias:** No se admiten paquetes con vulnerabilidades conocidas (CVE) ni paquetes de telemetría invasiva.
+- **Principio de Mínimo Privilegio:** Los tokens de APIs externas se generan con permisos acotados exclusivamente a los recursos necesarios.
+- **Auditoría de Dependencias:** No se admiten paquetes con vulnerabilidades conocidas (CVE) ni librerías de telemetría invasiva.
 """
+            return resolved
 
-        # Fallback genérico: cabecera del override + cuerpo de la base
-        return f"{override_text}\n\n---\n\n{interpolated_base}"
+        # Caso especial 4: Architecture Rules (Soberano; añade paquetes prohibidos si no estaban en el texto)
+        if doc_name == "architecture_rules.md":
+            if m.architecture.forbidden_packages and "Paquetes Prohibidos" not in resolved:
+                resolved += "\n\n## 4. Paquetes Prohibidos por Diseño\n\nQueda formalmente prohibida la inclusión de las siguientes dependencias:\n"
+                for pkg in m.architecture.forbidden_packages:
+                    resolved += f"- `{pkg}`\n"
+            return resolved
+
+        # Para cualquier otro documento con override: es soberano y no se concatena con la plantilla base
+        return resolved
 
     def _interpolate_template(self, doc_name: str, template: str) -> str:
         m = self.manifest
@@ -124,6 +156,27 @@ class ContextGenerator:
                 module_rows + "\n",
                 content,
             )
+
+        elif doc_name == "architecture_rules.md":
+            # Adaptar rutas y capas para stacks no-Flutter
+            if not is_flutter:
+                content = content.replace("lib/app/", f"{folder}/core/")
+                content = content.replace("lib/core/", f"{folder}/core/")
+                content = content.replace("lib/features/", f"{folder}/features/")
+                content = content.replace("lib/", f"{folder}/")
+                content = content.replace("widgets", "componentes o endpoints")
+
+            if m.architecture.forbidden_packages and "Paquetes Prohibidos" not in content:
+                content += "\n\n## 7. Paquetes Prohibidos por Diseño\n\nQueda formalmente prohibida la inclusión de las siguientes dependencias:\n"
+                for pkg in m.architecture.forbidden_packages:
+                    content += f"- `{pkg}`\n"
+
+        elif doc_name == "project_structure.md":
+            if not is_flutter:
+                content = content.replace("lib/app/", f"{folder}/core/")
+                content = content.replace("lib/core/", f"{folder}/core/")
+                content = content.replace("lib/features/", f"{folder}/features/")
+                content = content.replace("lib/", f"{folder}/")
 
         elif doc_name == "ui-design-system.md":
             if not m.ui.has_ui:
@@ -147,11 +200,5 @@ No aplica sistema de diseño visual ni tokens de color o tipografía. La discipl
         elif doc_name == "platform_matrix.md":
             rows = "\n".join([f"| **{p}** | Versión estable moderna | Compilación nativa optimizada | Hardware estándar |" for p in m.platform.platforms])
             content = re.sub(r"\|\s*<Plataforma A>[\s\S]*?\|\s*<Plataforma C>.*?\n", rows + "\n", content)
-
-        elif doc_name == "architecture_rules.md":
-            if m.architecture.forbidden_packages:
-                content += f"\n\n## 7. Paquetes Prohibidos por Diseño\n\nQueda formalmente prohibida la inclusión de las siguientes dependencias:\n"
-                for pkg in m.architecture.forbidden_packages:
-                    content += f"- `{pkg}`\n"
 
         return content

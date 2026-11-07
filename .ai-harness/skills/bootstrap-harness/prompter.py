@@ -14,6 +14,7 @@ from input_scanner import InputDigest
 from models import (
     ADRItem,
     ArchitectureConfig,
+    AuthorInfo,
     BootstrapManifest,
     FailureModeItem,
     GitProvider,
@@ -487,6 +488,26 @@ class Prompter:
                 setup_ci=setup_ci,
             )
 
+        # ---------------------------------------------------------------------
+        # FASE 7: Datos del Autor / Creador
+        # ---------------------------------------------------------------------
+        author_name = self._ask_text(
+            "Nombre del autor o creador del proyecto",
+            "Permite reflejar la autoría y canales profesionales en el README del producto.",
+            "docs/02-agents-md.md",
+            default="Ángel Díaz Gil",
+        )
+
+        author_info = AuthorInfo(
+            name=author_name,
+            bio="Product Owner, Product Manager y especialista en metodologías ágiles e ingeniería con IA.",
+            book="Agile Product Owner: Gestiona productos liderando equipos ágiles: Todo lo que necesitas para convertirte en un Product Owner exitoso",
+            book_url="https://www.amazon.es/stores/%C3%81ngel-D%C3%ADaz-Gil/author/B0DS2TY1BY?language=en&ref=ap_rdr&shoppingPortalEnabled=true",
+            amazon_url="https://www.amazon.es/stores/%C3%81ngel-D%C3%ADaz-Gil/author/B0DS2TY1BY?language=en&ref=ap_rdr&shoppingPortalEnabled=true",
+            linkedin="https://www.linkedin.com/in/angel-diaz-gil/",
+            twitter="https://x.com/angel_diaz_gil",
+        ) if author_name else AuthorInfo()
+
         return BootstrapManifest(
             identity=identity,
             stack=stack,
@@ -504,6 +525,7 @@ class Prompter:
             ),
             failure_modes=failure_modes,
             adr_0001=adr_0001,
+            author=author_info,
             git_remote=git_config,
             referenced_documents=self.digest.files_found,
         )

@@ -28,7 +28,8 @@
 9. [Reglas de oro no negociables](#-reglas-de-oro-no-negociables)
 10. [Integración Continua Dual (GitHub & GitLab)](#-integración-continua-dual-github--gitlab)
 11. [Cómo Contribuir](#-cómo-contribuir)
-12. [Licencia](#-licencia)
+12. [Sobre el Autor](#-sobre-el-autor)
+13. [Licencia](#-licencia)
 
 ---
 
@@ -281,6 +282,20 @@ El arnés está diseñado para operar con paridad total tanto en **GitHub** como
 ## 🤝 Cómo Contribuir
 
 Las contribuciones son bienvenidas tanto de desarrolladores humanos como de agentes de IA. Consulta nuestra [Guía de Contribución (CONTRIBUTING.md)](CONTRIBUTING.md) para conocer el protocolo de ramas, propuestas OpenSpec y validación local obligatoria.
+
+---
+
+## 👤 Sobre el Autor
+
+**Ángel Díaz Gil** es Product Owner, Product Manager y especialista en metodologías ágiles (Scrum, SAFe, Lean), Product Discovery, diseño de arquitecturas resilientes y liderazgo de equipos de ingeniería asistida por Inteligencia Artificial.
+
+Es autor del libro:
+📖 **[*Agile Product Owner: Gestiona productos liderando equipos ágiles: Todo lo que necesitas para convertirte en un Product Owner exitoso*](https://www.amazon.es/stores/%C3%81ngel-D%C3%ADaz-Gil/author/B0DS2TY1BY?language=en&ref=ap_rdr&shoppingPortalEnabled=true)** (publicado y disponible en Amazon).
+
+Conecta y sigue su trabajo profesional:
+- 🌐 **Perfil de Autor en Amazon:** [amazon.es/author/angel-diaz-gil](https://www.amazon.es/stores/%C3%81ngel-D%C3%ADaz-Gil/author/B0DS2TY1BY?language=en&ref=ap_rdr&shoppingPortalEnabled=true)
+- 💼 **LinkedIn:** [linkedin.com/in/angel-diaz-gil](https://www.linkedin.com/in/angel-diaz-gil/)
+- 🐦 **X (Twitter):** [@angel_diaz_gil](https://x.com/angel_diaz_gil)
 
 ---
 

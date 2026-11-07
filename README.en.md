@@ -28,7 +28,8 @@
 9. [Non-Negotiable Golden Rules](#-non-negotiable-golden-rules)
 10. [Dual CI/CD Integration (GitHub & GitLab)](#-dual-cicd-integration-github--gitlab)
 11. [Contributing](#-contributing)
-12. [License](#-license)
+12. [About the Author](#-about-the-author)
+13. [License](#-license)
 
 ---
 
@@ -282,6 +283,20 @@ The harness provides native feature parity across both **GitHub** and **GitLab**
 ## 🤝 Contributing
 
 Contributions are welcome from both human developers and AI agents! Please read our [Contributing Guidelines (CONTRIBUTING.md)](CONTRIBUTING.md) to understand our branching model, OpenSpec change workflow, and mandatory local validation gates.
+
+---
+
+## 👤 About the Author
+
+**Ángel Díaz Gil** is a Product Owner, Product Manager, and specialist in agile frameworks (Scrum, SAFe, Lean), Product Discovery, resilient architecture design, and AI-assisted engineering leadership.
+
+He is the author of the book:
+📖 **[*Agile Product Owner: Gestiona productos liderando equipos ágiles: Todo lo que necesitas para convertirte en un Product Owner exitoso*](https://www.amazon.es/stores/%C3%81ngel-D%C3%ADaz-Gil/author/B0DS2TY1BY?language=en&ref=ap_rdr&shoppingPortalEnabled=true)** (published and available on Amazon).
+
+Connect and follow his work:
+- 🌐 **Amazon Author Profile:** [amazon.es/author/angel-diaz-gil](https://www.amazon.es/stores/%C3%81ngel-D%C3%ADaz-Gil/author/B0DS2TY1BY?language=en&ref=ap_rdr&shoppingPortalEnabled=true)
+- 💼 **LinkedIn:** [linkedin.com/in/angel-diaz-gil](https://www.linkedin.com/in/angel-diaz-gil/)
+- 🐦 **X (Twitter):** [@angel_diaz_gil](https://x.com/angel_diaz_gil)
 
 ---
 

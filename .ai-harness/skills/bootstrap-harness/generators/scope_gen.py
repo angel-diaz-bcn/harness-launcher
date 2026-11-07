@@ -27,16 +27,7 @@ class ScopeGenerator:
         is_node = m.stack.stack_type == StackType.NODE
         folder_prefix = "lib" if is_flutter else "src"
 
-        # 1. Si existe una plantilla canónica estricta para este bloque (ej. block_core.md)
-        template_file = self.scopes_dir / f"block_{scope.name}.md"
-        if template_file.exists() and scope.name == "core":
-            raw = template_file.read_text(encoding="utf-8", errors="ignore")
-            content = raw.replace("<PROYECTO>", m.identity.name)
-            content = content.replace("lib/core/", f"{clean_path}/")
-            content = content.replace("lib/", f"{folder_prefix}/")
-            return content
-
-        # 2. Inferencia de tipo de módulo para estructura y responsabilidades coherentes
+        # Inferencia de tipo de módulo para estructura y responsabilidades coherentes
         lower_name = scope.name.lower()
         lower_desc = (scope.description or "").lower()
 
@@ -46,7 +37,7 @@ class ScopeGenerator:
         is_sandbox = any(w in lower_name or w in lower_desc for w in ("factory", "build", "sandbox", "qa", "compilador"))
         is_distribution = any(w in lower_name or w in lower_desc for w in ("distribution", "growth", "marketing", "seo", "cro"))
 
-        # Estructura interna adaptada a la naturaleza del bloque
+        # Estructura interna adaptada a la naturaleza del bloque o a las capas arquitectónicas
         if is_ui_scope:
             structure = f"""{clean_path}/
 ├── components/      # Componentes visuales atómicos reutilizables (DS-*)
@@ -77,6 +68,12 @@ class ScopeGenerator:
 ├── seo/             # Sitemaps dinámicos y esquemas estructurados
 └── cro/             # Monitoreo de conversión y bucle de optimización"""
             owned_responsibility = f"Distribución automatizada, escucha social ética y SEO de {scope.title}."
+        elif m.architecture.layers:
+            layer_lines = "\n".join([f"├── {l}/" + (" " * max(1, 14 - len(l))) + f"# Capa de {l}" for l in m.architecture.layers[:-1]])
+            last_l = m.architecture.layers[-1]
+            layer_lines += f"\n└── {last_l}/" + (" " * max(1, 14 - len(last_l))) + f"# Capa de {last_l}"
+            structure = f"{clean_path}/\n{layer_lines}"
+            owned_responsibility = f"Lógica de dominio, servicios e interfaces de {scope.title} organizadas según {m.architecture.style}."
         else:
             structure = f"""{clean_path}/
 ├── domain/          # Entidades puras y reglas de negocio
@@ -96,6 +93,16 @@ class ScopeGenerator:
 
         # Formatear lista de rutas prohibidas
         forbidden_list = ", ".join([f"`{p}`" for p in scope.forbidden_paths]) if scope.forbidden_paths else "`Ninguna de otros bloques privados`"
+
+        if scope.name == "core":
+            not_owned_items = f"""- Reglas de negocio privadas de las features funcionales.
+- Componentes visuales o interfaces gráficas de usuario.
+- Modificación directa de archivos del arnés o de pipelines de CI."""
+        else:
+            not_owned_items = f"""- Infraestructura transversal compartida (vive en `{folder_prefix}/core/`).
+- Entidades, contratos o datos pertenecientes a otras features.
+- Configuración global o ciclo de vida transversal de la aplicación.
+- Modificación directa de archivos del arnés o de pipelines de CI."""
 
         return f"""# Scope — {scope.title} (`block_{scope.name}`)
 
@@ -133,10 +140,7 @@ Garantiza el aislamiento funcional del módulo, encapsulando sus estructuras int
 
 ## 4. No posee (Límites y exclusiones estrictas)
 
-- Infraestructura transversal compartida (vive en `{folder_prefix}/core/`).
-- Entidades, contratos o datos pertenecientes a otras features.
-- Configuración global o ciclo de vida transversal de la aplicación.
-- Modificación directa de archivos del arnés o de pipelines de CI.
+{not_owned_items}
 
 ---
 

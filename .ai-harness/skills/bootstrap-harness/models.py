@@ -151,6 +151,18 @@ class FailureModeItem(BaseModel):
     good_code: str = Field(default="", description="Ejemplo de código canónico correcto")
 
 
+class AuthorInfo(BaseModel):
+    model_config = ConfigDict(frozen=True)
+
+    name: str = Field(default="", description="Nombre completo del autor o mantenedor")
+    bio: str = Field(default="", description="Breve biografía o rol profesional")
+    book: str = Field(default="", description="Libro publicado o publicación relevante")
+    book_url: str = Field(default="", description="Enlace a la publicación o tienda")
+    amazon_url: str = Field(default="", description="Enlace al perfil de autor en Amazon")
+    linkedin: str = Field(default="", description="URL del perfil de LinkedIn")
+    twitter: str = Field(default="", description="URL del perfil de X/Twitter")
+
+
 class ADRItem(BaseModel):
     model_config = ConfigDict(frozen=True)
 
@@ -173,6 +185,7 @@ class BootstrapManifest(BaseModel):
     ui: UIConfig
     failure_modes: list[FailureModeItem]
     adr_0001: ADRItem
+    author: AuthorInfo = Field(default_factory=AuthorInfo, description="Datos biográficos y profesionales del autor")
     git_remote: GitRemoteConfig = Field(default_factory=GitRemoteConfig)
     referenced_documents: list[str] = Field(
         default_factory=list,

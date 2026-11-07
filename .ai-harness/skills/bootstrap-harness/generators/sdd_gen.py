@@ -45,7 +45,7 @@ class SDDGenerator:
             clean_path = path_root.rstrip("/")
 
             if s_name == "core":
-                specs["modules/core.md"] = self._module_core(clean_path, ext, test_folder, today)
+                specs["modules/core.md"] = self._module_core(clean_path, ext, test_folder, today, scope)
             elif s_name == "ui":
                 specs["modules/ui.md"] = self._module_ui(clean_path, ext, test_folder, today)
             else:
@@ -89,15 +89,17 @@ Cada archivo representa la única fuente de verdad funcional y contractual de su
         parts = re.split(r"[-_\s]+", text)
         return "".join(p.capitalize() for p in parts if p)
 
-    def _module_core(self, clean_path: str, ext: str, test_folder: str, today: str) -> str:
+    def _module_core(self, clean_path: str, ext: str, test_folder: str, today: str, scope: ScopeDefinition | None = None) -> str:
         m = self.manifest
         is_python = m.stack.stack_type == StackType.PYTHON
+        title = scope.title if scope else "Infraestructura Transversal y Contratos Base"
+        desc = scope.description if scope else "Cliente HTTP base, contratos de persistencia, bus de eventos y utilidades transversales."
 
-        return f"""# Módulo: Núcleo Transversal (MOD-core)
+        return f"""# Módulo: {title} (MOD-core)
 
 ```yaml
 module_id: MOD-core
-name: "Infraestructura Transversal, Contratos Base y Utilidades"
+name: "{title}"
 target_path: "{clean_path}/"
 scope: "block_core.md"
 owner: "Architecture & Platform Team"
@@ -109,20 +111,18 @@ last_updated: "{today}"
 
 ## 1. Propósito y Responsabilidades
 
-Concentra lo que cualquier módulo del sistema necesita y ninguno debe duplicar:
-cliente HTTP resiliente, contratos de persistencia, bus de eventos, logging estructurado
-y modelos inmutables de error.
+{desc}
 
 ### Lo que hace
-- Cliente HTTP seguro con política determinista de timeouts y reintentos.
+- Concentra la coordinación transversal, contratos base e interfaces públicas de `{clean_path}/`.
 - Contratos abstractos de persistencia ({m.architecture.persistence if m.architecture.persistence != 'none' else 'almacenamiento desacoplado'}).
 - Modelado de excepciones tipadas y resultados inmutables (`Result[T, AppError]`).
-- Logger estructurado y bus interno de eventos.
+- Bus interno de eventos y orquestación del ciclo de vida del sistema.
 
 ### Lo que NO hace
-- No contiene lógica de negocio específica de features ni reglas de dominio.
-- No contiene componentes visuales, widgets ni estilos CSS.
+- No contiene lógica de presentación gráfica ni estilos CSS.
 - No almacena secretos en texto plano ni credenciales fijas.
+- No ejecuta llamadas de red sin timeout y reintentos finitos.
 
 ---
 

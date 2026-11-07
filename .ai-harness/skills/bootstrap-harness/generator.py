@@ -110,7 +110,7 @@ class HarnessGenerator:
 
         # Si se clonó el repositorio de harness-launcher, remover la carpeta docs/ propia del launcher
         # tal como estipula MANIFEST.md y AGENTS.md §6
-        launcher_doc = self.workspace_root / "docs" / "01-arquitectura.md"
+        launcher_doc = self.workspace_root / "docs" / "00-indice.md"
         if launcher_doc.exists():
             shutil.rmtree(self.workspace_root / "docs", ignore_errors=True)
 
@@ -614,11 +614,52 @@ proyecto nuevo, se copia solo la sección 1.
     # -------------------------------------------------------------------------
     def _generate_readme_md(self) -> None:
         m = self.manifest
+        if m.identity.slug == "harness-launcher":
+            return
+
         repo_info = ""
         repo_info_en = ""
         if m.git_remote.url:
             repo_info = f"- **Repositorio remoto ({m.git_remote.provider.value.upper()}):** `{m.git_remote.url}`"
             repo_info_en = f"- **Remote Repository ({m.git_remote.provider.value.upper()}):** `{m.git_remote.url}`"
+
+        author_section_es = ""
+        author_section_en = ""
+        author = m.author
+        if author.name:
+            book_es = f"\nEs autor del libro:\n📖 **[{author.book}]({author.book_url or author.amazon_url})**\n" if author.book else ""
+            book_en = f"\nAuthor of the book:\n📖 **[{author.book}]({author.book_url or author.amazon_url})**\n" if author.book else ""
+
+            links_es = []
+            links_en = []
+            if author.amazon_url:
+                links_es.append(f"- 🌐 **Perfil en Amazon:** [Amazon Author]({author.amazon_url})")
+                links_en.append(f"- 🌐 **Amazon Author Profile:** [Amazon Author]({author.amazon_url})")
+            if author.linkedin:
+                links_es.append(f"- 💼 **LinkedIn:** [{author.linkedin}]({author.linkedin})")
+                links_en.append(f"- 💼 **LinkedIn:** [{author.linkedin}]({author.linkedin})")
+            if author.twitter:
+                links_es.append(f"- 🐦 **X (Twitter):** [{author.twitter}]({author.twitter})")
+                links_en.append(f"- 🐦 **X (Twitter):** [{author.twitter}]({author.twitter})")
+
+            author_section_es = f"""
+---
+
+## 5. Sobre el Autor
+
+**{author.name}** {f'— {author.bio}' if author.bio else ''}
+{book_es}
+{chr(10).join(links_es)}
+"""
+            author_section_en = f"""
+---
+
+## 5. About the Author
+
+**{author.name}** {f'— {author.bio}' if author.bio else ''}
+{book_en}
+{chr(10).join(links_en)}
+"""
 
         # 1. README en Español
         content_es = f"""# {m.identity.name}
@@ -678,7 +719,7 @@ python .ai-harness/skills/sync-sdd/runner.py
 ## 4. Flujo de Trabajo para Agentes de IA
 
 Cualquier agente de IA que colabore en este repositorio debe comenzar leyendo obligatoriamente [`AGENTS.md`](AGENTS.md) y ejecutar la carga JIT en el orden exacto indicado antes de inspeccionar o modificar código.
-"""
+{author_section_es}"""
         self._write(self.workspace_root / "README.md", content_es)
 
         # 2. README en Inglés
@@ -739,7 +780,7 @@ python .ai-harness/skills/sync-sdd/runner.py
 ## 4. AI Agent Workflow
 
 Any autonomous AI agent collaborating on this repository must strictly start by reading [`AGENTS.md`](AGENTS.md) and execute the JIT context loading sequence before touching code.
-"""
+{author_section_en}"""
         self._write(self.workspace_root / "README.en.md", content_en)
 
     # -------------------------------------------------------------------------
