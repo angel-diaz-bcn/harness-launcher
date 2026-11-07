@@ -328,7 +328,51 @@ class Prompter:
         # ---------------------------------------------------------------------
         # FASE 4: UI, Tokens y Privacidad (docs/06-design-system.md & security_privacy.md)
         # ---------------------------------------------------------------------
-        has_ui = stype in (StackType.FLUTTER, StackType.GENERIC, StackType.NODE)
+        ui_choice = self._ask_choice(
+            "¿El proyecto incluye interfaz de usuario (UI)?",
+            "Define si se genera design-system con tokens visuales o si es un proyecto backend/CLI puro.",
+            "docs/06-design-system.md",
+            [
+                ("Sí, incluye interfaz visual (Web, Móvil o Escritorio)", "Genera tokens de color, componentes, layout y mapeos de código."),
+                ("No, es un backend, servicio CLI o daemon headless", "Mantiene el arnés libre de reglas visuales innecesarias."),
+            ],
+            ai_recommendation="Sí" if stype in (StackType.FLUTTER, StackType.NODE) else "No",
+            default_index=1 if stype in (StackType.FLUTTER, StackType.NODE) else 2,
+        )
+        has_ui = "Sí" in ui_choice
+
+        focus_nav = False
+        css_fw = ""
+        key_components = ["Header", "Sidebar", "Button", "Card", "Table", "Modal"]
+        if has_ui:
+            if stype == StackType.NODE or any("web" in p.lower() for p in platform_list):
+                css_choice = self._ask_choice(
+                    "Framework CSS o sistema de estilos preferido",
+                    "Configura el mapeo de clases y utilidades en design-system/06-code-mapping.md.",
+                    "docs/06-design-system.md",
+                    [
+                        ("Tailwind CSS", "Clases de utilidad atómicas acopladas a tokens.json."),
+                        ("CSS Variables (:root)", "Variables CSS nativas desacopladas del framework."),
+                        ("Component Library (Material, Radix, Shadcn, Chakra)", "Componentes prefabricados que consumen temas."),
+                    ],
+                    ai_recommendation="Tailwind CSS para agilidad y correspondencia directa con tokens.",
+                    default_index=1,
+                )
+                css_fw = css_choice.split("(")[0].strip()
+
+            dpad_choice = self._ask_choice(
+                "¿Se requiere navegación estricta por D-Pad o mando?",
+                "Indica si el foco espacial para Smart TVs, consolas o terminales embebidos es obligatorio.",
+                "docs/06-design-system.md §Navegación espacial",
+                [
+                    ("No requerida (Navegación estándar por ratón, táctil y Tab accesible)", "Recomendado para web y apps móviles normales."),
+                    ("Sí, obligatoria por D-Pad / Flechas direccionales", "Impone matrices de foco y checks de control remoto."),
+                ],
+                ai_recommendation="No requerida para aplicaciones web o móviles táctiles.",
+                default_index=1,
+            )
+            focus_nav = "Sí" in dpad_choice
+
         privacy_choice = self._ask_choice(
             "Política de privacidad y telemetría de usuario",
             "Queda registrada como límite infranqueable en security_privacy.md y comprobada por preflight.",
@@ -452,7 +496,12 @@ class Prompter:
             ),
             scopes=default_scopes,
             platform=PlatformConfig(platforms=platform_list, privacy_policy=privacy),
-            ui=UIConfig(has_ui=has_ui),
+            ui=UIConfig(
+                has_ui=has_ui,
+                focus_navigation_required=focus_nav,
+                css_framework=css_fw,
+                key_components=key_components if has_ui else [],
+            ),
             failure_modes=failure_modes,
             adr_0001=adr_0001,
             git_remote=git_config,

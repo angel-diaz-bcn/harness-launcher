@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from models import BootstrapManifest, ProductArchetype
+from models import BootstrapManifest, StackType
 
 
 class DesignSystemGenerator:
@@ -33,6 +33,8 @@ class DesignSystemGenerator:
                 "tokens.json": json.dumps({"version": "1.0.0", "has_ui": False, "note": "Backend / CLI API - No visual tokens required"}, indent=2),
             }
 
+        is_flutter = m.stack.stack_type in (StackType.FLUTTER, StackType.DART)
+
         docs = [
             "01-foundations.md",
             "02-tokens.md",
@@ -49,8 +51,22 @@ class DesignSystemGenerator:
             if template_path.exists():
                 raw = template_path.read_text(encoding="utf-8", errors="ignore")
                 content = raw.replace("<PROYECTO>", m.identity.name)
+
+                # Si no requiere navegación D-Pad, purgar referencias a TV/cruceta
                 if not m.ui.focus_navigation_required:
-                    content = content.replace("D-Pad", "Teclado / Ratón / Táctil")
+                    content = content.replace("D-Pad / Mando a distancia (si aplica a TV o consolas)", "Navegación por teclado estándar (Tab, Enter, Escape) y ratón/táctil")
+                    content = content.replace("D-Pad", "Teclado y Táctil")
+                    content = content.replace("mando a distancia", "teclado y puntero")
+                    content = content.replace("sección horizontal  ← foco se mueve en un eje", "grid responsivo de contenido")
+
+                # Especialización de mapeo a código y componentes según stack
+                if doc == "06-code-mapping.md" and not is_flutter:
+                    content = self._web_code_mapping()
+                elif doc == "04-components.md" and not is_flutter:
+                    content = self._web_components()
+                elif doc == "05-pages.md" and not is_flutter:
+                    content = self._web_pages()
+
                 result[doc] = content
             else:
                 result[doc] = f"# {doc}\n\nEspecificación de diseño para {m.identity.name}.\n"
@@ -58,10 +74,129 @@ class DesignSystemGenerator:
         result["tokens.json"] = self._resolve_tokens_json()
         return result
 
+    def _web_code_mapping(self) -> str:
+        m = self.manifest
+        css_fw = getattr(m.ui, "css_framework", "tailwind")
+        return f"""# 06 — Correspondencia con el Código (Web / {css_fw.capitalize()})
+
+Traza cómo cada token visual llega al código fuente web y cómo se verifica.
+Esta tabla garantiza que el sistema de diseño no es documentación muerta.
+
+---
+
+## 1. Cadena de trazabilidad
+
+```
+tokens.json → variables CSS / clases utilitarias → componente web → spec (MOD-ui) → test
+```
+
+| Token | Clase / Variable ({css_fw}) | Elemento Web | Spec | Test de Paridad |
+|---|---|---|---|---|
+| `colors.background.primary` | `var(--color-bg-primary)` / `bg-background-primary` | `<body>`, `<main>` | `MOD-ui` | `test_theme_tokens_parity` |
+| `colors.background.surface` | `var(--color-bg-surface)` / `bg-background-surface` | `<section>`, `.card` | `MOD-ui` | `test_theme_tokens_parity` |
+| `colors.text.primary` | `var(--color-text-primary)` / `text-text-primary` | `<h1>`, `<p>`, `<span>` | `MOD-ui` | `test_theme_tokens_parity` |
+| `colors.brand.primary` | `var(--color-brand-primary)` / `bg-brand-primary` | `.btn-primary` | `MOD-ui` | `test_theme_tokens_parity` |
+| `colors.brand.danger` | `var(--color-brand-danger)` / `text-brand-danger` | `.alert-danger`, `.btn-kill` | `MOD-ui` | `test_theme_tokens_parity` |
+| `spacing.md` | `var(--spacing-md)` / `p-4`, `gap-4` | Contenedores y grillas | `MOD-ui` | `test_theme_tokens_parity` |
+| `typography.font_family_sans` | `var(--font-sans)` / `font-sans` | Raíz tipográfica | `MOD-ui` | `test_theme_tokens_parity` |
+
+---
+
+## 2. Reglas de Mapeo
+
+1. **Cero HEX literal en HTML/JS/CSS:** Prohibido escribir códigos de color hexadecimales directos en archivos `.html`, `.vue`, `.tsx`, `.py` o plantillas. Deben consumirse siempre a través de las variables CSS de tokens o clases configuradas.
+2. **Actualización atómica:** Cualquier adición o modificación en `tokens.json` debe reflejarse en la hoja de estilos raíz (`tokens.css` o `tailwind.config.js`) y en este documento en el mismo commit.
+3. **Verificación automatizada:** El check 04_ui_tokens de `preflight` analiza el código buscando expresiones regulares de color literal y falla la build si se detectan transgresiones.
+"""
+
+    def _web_components(self) -> str:
+        m = self.manifest
+        return f"""# 04 — Componentes Visuales del Sistema (`DS-*`)
+
+Inventario canónico de componentes reutilizables de {m.identity.name}.
+Cada componente define propósito, anatomía, estados y tokens consumidos.
+
+---
+
+## 1. Convención de Identificadores
+
+```
+DS-<ÁMBITO>-<NOMBRE>
+```
+
+Ámbitos: `LAYOUT` (estructura), `NAV` (navegación), `INPUT` (acciones y formularios),
+`FEEDBACK` (alertas, loaders, estados vacíos), `DATA` (métricas, tablas, feeds).
+
+---
+
+## 2. Inventario de Componentes Canónicos
+
+| ID | Nombre | Propósito | Estados |
+|---|---|---|---|
+| `DS-LAYOUT-CONTAINER` | Contenedor Principal | Envoltura responsiva con ancho máximo y padding seguro | `default` |
+| `DS-NAV-HEADER` | Barra de Navegación | Cabecera superior con logotipo, estado y accesos directos | `default`, `sticky` |
+| `DS-INPUT-BUTTON` | Botón de Acción | Disparador de acciones primarias, secundarias y destructivas | `default`, `hover`, `focus`, `disabled`, `loading` |
+| `DS-INPUT-SWITCH` | Interruptor de Control | Control de alternancia rápida (ej. hardware switches, pausar) | `on`, `off`, `disabled` |
+| `DS-DATA-METRIC-CARD` | Tarjeta de Métrica | Visualización de KPI con valor numérico, etiqueta y tendencia | `default`, `alert` |
+| `DS-DATA-TABLE` | Tabla de Datos | Lista estructurada de registros con cabecera y ordenación | `default`, `empty`, `loading` |
+| `DS-FEEDBACK-ALERT` | Banner de Estado | Notificación contextual con variante semántica (info, warn, error) | `info`, `warning`, `danger` |
+| `DS-FEEDBACK-LOADER` | Indicador de Carga | Spinner o esqueleto visual durante peticiones asíncronas | `animating` |
+
+---
+
+## 3. Reglas de Construcción
+
+1. **Aislamiento Funcional:** Los componentes `DS-*` no contienen lógica de red ni acceso directo a bases de datos; reciben datos y eventos vía propiedades/atributos.
+2. **Accesibilidad Obligatoria:** Todo control interactivo (`BUTTON`, `SWITCH`) cuenta con atributos `aria-label`, foco visible con outline nítido y ratio de contraste mínimo 4.5:1 (WCAG AA).
+"""
+
+    def _web_pages(self) -> str:
+        m = self.manifest
+        return f"""# 05 — Estructura de Páginas y Layout Responsivo
+
+Blueprint de distribución espacial y flujo de usuario para {m.identity.name}.
+
+---
+
+## 1. Rejilla y Breakpoints Responsivos
+
+El sistema se adapta fluidamente a 3 anchos de pantalla fundamentales:
+
+| Dispositivo | Ancho Mínimo | Columnas | Margen Lateral |
+|---|---|---|---|
+| **Móvil (Smartphones)** | `< 640px` | 1 columna | `16px` |
+| **Tablet / Portátil pequeño** | `640px - 1024px` | 2 - 4 columnas | `24px` |
+| **Escritorio (Desktop / Monitor)** | `> 1024px` | 12 columnas (máx. 1440px) | `32px` |
+
+---
+
+## 2. Blueprint de Pantalla Estándar
+
+```
+┌────────────────────────────────────────────────────────┐
+│ DS-NAV-HEADER (Logo, Estado de Servicio, Acciones)    │
+├────────────────────────────┬───────────────────────────┤
+│ PANEL PRINCIPAL (Metrics)  │ LIVE ACTIVITY FEED / LOGS │
+│ - Tarjetas KPI             │ - Streaming en vivo (SSE) │
+│ - Controles de Acción      │                           │
+├────────────────────────────┴───────────────────────────┤
+│ TABLA O KANBAN DE ACTIVOS (Listado Principal)          │
+│                                                        │
+└────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 3. Principios de Interacción
+
+- **Diseño Limpio y Libre de Fricción:** Toda acción crítica (ej. interruptores de emergencia o exportaciones) debe ser alcanzable en 1 solo clic.
+- **Respuesta Visual Inmediata:** Toda operación que tome más de 300 ms debe mostrar de forma inmediata el estado `DS-FEEDBACK-LOADER`.
+"""
+
     def _resolve_tokens_json(self) -> str:
         m = self.manifest
 
-        # 1. Si el manifiesto trae tokens personalizados recuperados del PRD/usuario, usarlos
+        # 1. Si el manifiesto trae tokens personalizados recuperados del PRD/usuario, usarlos directamente
         if m.ui.custom_tokens:
             return json.dumps(m.ui.custom_tokens, indent=2)
 

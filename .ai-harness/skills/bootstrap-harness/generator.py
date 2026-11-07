@@ -99,7 +99,20 @@ class HarnessGenerator:
         # 15. Y AL FINAL: AGENTS.md (orquestador maestro con todos los scopes y workflows)
         self._generate_agents_md()
 
+        # 16. Limpieza de artefactos exclusivos del meta-arnés (docs/)
+        self._cleanup_launcher_artifacts()
+
         return self.generated_files
+
+    def _cleanup_launcher_artifacts(self) -> None:
+        if self.manifest.identity.slug == "harness-launcher" or self.dry_run:
+            return
+
+        # Si se clonó el repositorio de harness-launcher, remover la carpeta docs/ propia del launcher
+        # tal como estipula MANIFEST.md y AGENTS.md §6
+        launcher_doc = self.workspace_root / "docs" / "01-arquitectura.md"
+        if launcher_doc.exists():
+            shutil.rmtree(self.workspace_root / "docs", ignore_errors=True)
 
     # -------------------------------------------------------------------------
     # 1. harness.config.yaml
@@ -108,7 +121,30 @@ class HarnessGenerator:
         m = self.manifest
         scope_files = [f"block_{s.name}.md" for s in m.scopes]
         all_path_roots = [p for s in m.scopes for p in s.path_roots]
-        all_forbidden_paths = [p for s in m.scopes for p in s.forbidden_paths]
+
+        stype = m.stack.stack_type
+        if stype in (StackType.FLUTTER, StackType.DART):
+            fw_prefix = f"package:{m.identity.slug}/"
+        elif stype == StackType.NODE:
+            fw_prefix = "@/"
+        else:
+            fw_prefix = ""
+
+        pers_feature = ""
+        if m.architecture.persistence != "none":
+            for s in m.scopes:
+                if any(k in s.name.lower() or k in s.description.lower() for k in ("core", "database", "data", "storage", "persistence")):
+                    pers_feature = s.name
+                    break
+            if not pers_feature and m.scopes:
+                pers_feature = m.scopes[0].name
+
+        ui_feature = ""
+        if m.ui.has_ui:
+            for s in m.scopes:
+                if any(k in s.name.lower() for k in ("ui", "presentation", "dashboard", "tokens")):
+                    ui_feature = s.name
+                    break
 
         content = f"""version: 1
 
@@ -144,11 +180,7 @@ scopes:
 {self._to_yaml_list(scope_files, indent=4)}
   path_roots:
 {self._to_yaml_list(all_path_roots or ['lib/'], indent=4)}
-  forbidden_paths:
-    - ".ai-harness/skills/"
-    - ".ai-harness/context/"
-    - ".github/"
-    - "harness.config.yaml"
+  forbidden_paths: []
 
 sdd:
   engine: openspec
@@ -189,15 +221,15 @@ architecture:
 {self._to_yaml_list([s.name for s in m.scopes], indent=4)}
   forbidden_by_feature: {{}}
   exclusive_import_paths: {{}}
-  framework_import_prefix: "package:{m.identity.slug}/"
+  framework_import_prefix: "{fw_prefix}"
   framework_free_features: ["domain"]
-  persistence_feature: "{'database' if m.architecture.persistence != 'none' else ''}"
+  persistence_feature: "{pers_feature}"
   persistence_imports: []
   forbidden_packages:
 {self._to_yaml_list(m.architecture.forbidden_packages, indent=4)}
 
 ui:
-  token_feature: "{'tokens' if m.ui.has_ui else ''}"
+  token_feature: "{ui_feature}"
 
 invariants:
   profile: none
@@ -578,19 +610,24 @@ proyecto nuevo, se copia solo la sección 1.
         self._write(self.workspace_root / "MANIFEST.md", content)
 
     # -------------------------------------------------------------------------
-    # 14. README.md de la raíz del producto
+    # 14. README.md y README.en.md de la raíz del producto
     # -------------------------------------------------------------------------
     def _generate_readme_md(self) -> None:
         m = self.manifest
         repo_info = ""
+        repo_info_en = ""
         if m.git_remote.url:
             repo_info = f"- **Repositorio remoto ({m.git_remote.provider.value.upper()}):** `{m.git_remote.url}`"
+            repo_info_en = f"- **Remote Repository ({m.git_remote.provider.value.upper()}):** `{m.git_remote.url}`"
 
-        content = f"""# {m.identity.name}
+        # 1. README en Español
+        content_es = f"""# {m.identity.name}
+
+**Español** | [English](README.en.md)
 
 > {m.identity.description}
 
-Proyecto construido con **{m.stack.language}** ({m.stack.framework}) bajo **Clean Architecture** y desarrollo guiado por especificaciones (**SDD**).
+Proyecto construido con **{m.stack.language}** ({m.stack.framework}) bajo **Clean Architecture** y desarrollo guiado por especificaciones (**OpenSpec SDD**).
 
 ---
 
@@ -642,7 +679,68 @@ python .ai-harness/skills/sync-sdd/runner.py
 
 Cualquier agente de IA que colabore en este repositorio debe comenzar leyendo obligatoriamente [`AGENTS.md`](AGENTS.md) y ejecutar la carga JIT en el orden exacto indicado antes de inspeccionar o modificar código.
 """
-        self._write(self.workspace_root / "README.md", content)
+        self._write(self.workspace_root / "README.md", content_es)
+
+        # 2. README en Inglés
+        content_en = f"""# {m.identity.name}
+
+[Español](README.md) | **English**
+
+> {m.identity.description}
+
+Project built with **{m.stack.language}** ({m.stack.framework}) under **Clean Architecture** and Specification-Driven Development (**OpenSpec SDD**).
+
+---
+
+## 1. Product Vision & Architecture
+
+- **Target Audience:** {m.identity.target_audience}
+- **Technology Stack:** {m.stack.language} | {m.stack.framework} | Package Manager: `{m.stack.package_manager}`
+- **Target Platforms:** {', '.join(m.platform.platforms)}
+- **Privacy Policy:** {m.platform.privacy_policy}
+{repo_info_en}
+
+### Core Modules (Scopes)
+{chr(10).join([f"- **{s.title} (`block_{s.name}`):** {s.description}" for s in m.scopes])}
+
+---
+
+## 2. Requirements & Development Commands
+
+- {m.stack.language} runtime installed on host machine.
+- Python 3.11+ for governance tooling execution (`requirements.txt`).
+
+```bash
+# Install harness tooling dependencies
+python -m pip install -r requirements.txt
+
+# Launch application
+python .ai-harness/skills/launch-app/runner.py
+# (Underlying command: {m.stack.launch_command})
+
+# Run test suite
+{m.stack.test_command}
+```
+
+---
+
+## 3. Deterministic Quality Gates
+
+Before committing or pushing changes, verify architecture and contract integrity:
+
+```bash
+python .ai-harness/skills/harness-validator/runner.py
+python .ai-harness/skills/preflight/runner.py
+python .ai-harness/skills/sync-sdd/runner.py
+```
+
+---
+
+## 4. AI Agent Workflow
+
+Any autonomous AI agent collaborating on this repository must strictly start by reading [`AGENTS.md`](AGENTS.md) and execute the JIT context loading sequence before touching code.
+"""
+        self._write(self.workspace_root / "README.en.md", content_en)
 
     # -------------------------------------------------------------------------
     # 15. Y AL FINAL: AGENTS.md (Orquestador Estricto sin reglas de negocio)
@@ -650,6 +748,11 @@ Cualquier agente de IA que colabore en este repositorio debe comenzar leyendo ob
     def _generate_agents_md(self) -> None:
         m = self.manifest
         scopes_list = ", ".join([f"`block_{s.name}.md`" for s in m.scopes])
+        accessibility_rule = (
+            "- **Accesibilidad:** interfaces responsivas, contraste AA y controles navegables con teclado según WCAG."
+            if not m.ui.focus_navigation_required
+            else "- **Foco universal:** todo control debe ser navegable con teclado o D-Pad."
+        )
 
         content = f"""# AGENTS.md — Orquestador del arnés para {m.identity.name}
 
@@ -669,11 +772,11 @@ Antes de leer código, proponer cambios o escribir archivos, cargar en este orde
 4. `.ai-harness/context/architecture_rules.md` — fronteras e invariantes.
 5. `.ai-harness/context/ui-design-system.md` y `.ai-harness/design-system/README.md`.
 6. `.ai-harness/scopes/block_*.md` — scope del área que se va a tocar ({scopes_list}).
-7. `.ai-harness/context/sdd_framework.md` — gobernanza SDD y convención `.spec.md`.
-8. La spec `.spec.md` activa, si existe.
+7. `.ai-harness/context/sdd_framework.md` — metodología OpenSpec (modules, changes, archive).
+8. El módulo vivo `.ai-harness/sdd/modules/<modulo>.md` y la propuesta en `changes/` activa, si existe.
 9. `.ai-harness/memory/failure_modes.md` — fallos que no deben repetirse.
 
-Si falta el scope o la spec de la tarea, detenerse y pedir la definición antes
+Si falta el scope o la definición del módulo, detenerse y pedir la definición antes
 de implementar.
 
 ---
@@ -711,11 +814,12 @@ incluye la extensión `.md`. Si no aparecen en el menú `/`, recargar la ventana
 
 ## 3. Reglas de trabajo
 
-- **SDD-First:** no se escribe código de producción sin spec aprobada en `.ai-harness/sdd/`.
+- **OpenSpec-First:** ningún cambio de feature o contrato se programa sin propuesta aislada previa en `changes/`.
 - **Sin invención:** si falta un dato, se registra como pregunta abierta y se detiene la implementación.
 - **Configuración primero:** un cambio de estructura del arnés empieza en `harness.config.yaml`, no en el código de un validador.
+- **Inmutabilidad del arnés:** el agente no debe modificar scripts en `.ai-harness/skills/`, `.ai-harness/context/` ni `harness.config.yaml` durante tareas de desarrollo de producto.
 - **Privacidad:** {m.platform.privacy_policy}.
-- **Foco universal:** todo control debe ser navegable con teclado o D-Pad.
+{accessibility_rule}
 - **Diseño:** solo tokens de `design-system/tokens.json`; prohibido HEX literal.
 - **Git:** `git push` solo con instrucción explícita del usuario.
 - **Sin residuos:** no introducir referencias ni tecnologías de otro proyecto.
@@ -730,7 +834,7 @@ Antes de declarar una tarea terminada:
 2. Ejecutar `python .ai-harness/skills/preflight/runner.py`.
 3. Ejecutar `python .ai-harness/skills/sync-sdd/runner.py`.
 4. Corregir la causa raíz de cualquier fallo; no reejecutar a ciegas.
-5. Actualizar la spec y el mapa de implementación si cambió el comportamiento.
+5. Actualizar el módulo maestro y el mapa de implementación si cambió el comportamiento.
 """
         self._write(self.workspace_root / "AGENTS.md", content)
 

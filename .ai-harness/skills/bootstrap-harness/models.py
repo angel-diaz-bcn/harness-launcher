@@ -124,6 +124,7 @@ class UIConfig(BaseModel):
 
     has_ui: bool = Field(default=True, description="Indica si el sistema incluye interfaz gráfica")
     theme_preference: str = Field(default="dark", description="Preferencia de tema (dark, light, adaptive)")
+    css_framework: str = Field(default="tailwind", description="Framework de diseño o estilos (tailwind, flutter_theme, css_modules, vanilla)")
     focus_navigation_required: bool = Field(
         default=False,
         description="Exigir navegación estricta por foco / D-Pad (solo TV / consolas)",
@@ -131,6 +132,10 @@ class UIConfig(BaseModel):
     custom_tokens: dict[str, Any] | None = Field(
         default=None,
         description="Tokens de diseño recuperados del brief/PRD (colores de marca, tipografías reales)",
+    )
+    key_components: list[str] = Field(
+        default_factory=list,
+        description="Componentes visuales clave requeridos por el producto",
     )
 
 
@@ -177,3 +182,7 @@ class BootstrapManifest(BaseModel):
         default_factory=dict,
         description="Contenido textual enriquecido generado por la IA para cada documento de context/",
     )
+
+    @property
+    def project(self) -> ProjectIdentity:
+        return self.identity

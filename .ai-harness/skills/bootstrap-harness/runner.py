@@ -91,10 +91,20 @@ def main() -> None:
         raw_data = yaml.safe_load(manifest_path.read_text(encoding="utf-8", errors="ignore"))
         manifest = BootstrapManifest.model_validate(raw_data)
     else:
-        scanner = InputScanner(Path(args.input_dir))
-        digest = scanner.scan()
-        prompter = Prompter(digest)
-        manifest = prompter.collect()
+        input_p = Path(args.input_dir)
+        auto_manifest = input_p / "manifest.yaml"
+        if not auto_manifest.exists():
+            auto_manifest = input_p / "manifest.yml"
+
+        if auto_manifest.exists():
+            print(f"\033[1m[Bootstrap] Manifiesto estructurado detectado en '{auto_manifest.name}'. Cargando...\033[0m")
+            raw_data = yaml.safe_load(auto_manifest.read_text(encoding="utf-8", errors="ignore"))
+            manifest = BootstrapManifest.model_validate(raw_data)
+        else:
+            scanner = InputScanner(input_p)
+            digest = scanner.scan()
+            prompter = Prompter(digest)
+            manifest = prompter.collect()
 
     print(f"\n\033[1m[Bootstrap] Generando arnés para '{manifest.identity.name}'...\033[0m")
     if args.dry_run:
