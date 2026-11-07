@@ -45,9 +45,15 @@ class ContextGenerator:
             if template_path.exists():
                 base_template = template_path.read_text(encoding="utf-8", errors="ignore")
 
-            # 2. Si existe un override específico en el manifiesto
-            if doc in self.manifest.custom_context_overrides and self.manifest.custom_context_overrides[doc].strip():
-                override_text = self.manifest.custom_context_overrides[doc].strip()
+            # 2. Si existe un override específico en el manifiesto (soporta tanto _ como - en el nombre)
+            override_key = None
+            for candidate in (doc, doc.replace("_", "-"), doc.replace("-", "_")):
+                if candidate in self.manifest.custom_context_overrides and self.manifest.custom_context_overrides[candidate].strip():
+                    override_key = candidate
+                    break
+
+            if override_key:
+                override_text = self.manifest.custom_context_overrides[override_key].strip()
                 result[doc] = self._handle_custom_override(doc, override_text, base_template)
                 continue
 
@@ -147,7 +153,33 @@ class ContextGenerator:
         content = self._resolve_common_vars(template)
 
         # Adaptaciones especializadas según el documento
-        if doc_name == "project_overview.md":
+        if doc_name == "system_identity.md":
+            content = content.replace(
+                "# Identidad del sistema y marco de decisión",
+                f"# Identidad del Sistema y Marco de Decisión — {m.identity.name}",
+            )
+            sec1_pattern = r"## 1\. Rol y posicionamiento[\s\S]*?(?=## 2|\Z)"
+            sec1_content = f"""## 1. Rol y Posicionamiento
+
+- **Producto:** {m.identity.name} — {m.identity.description}
+- **Arquetipo:** `{m.identity.archetype.value}` para {m.identity.target_audience}.
+- **Identidad del Agente:** Arquitecto de software e ingeniero principal responsable del desarrollo, gobernanza y calidad de {m.identity.name}.
+- **Dominio Técnico:** {m.stack.language} {f'({m.stack.framework})' if m.stack.framework else ''} ejecutándose en {', '.join(m.platform.platforms)}.
+- **Propósito:** Diseñar, especificar mediante OpenSpec y auditar el código con reglas explícitas, contratos inmutables y calidad verificable, eliminando alucinaciones y código huérfano.
+
+"""
+            content = re.sub(sec1_pattern, sec1_content, content)
+
+            if m.architecture.forbidden_packages and "paquetes vetados" not in content.lower():
+                sec4_target = "- Sin publicar en Git sin instrucción explícita del usuario."
+                if sec4_target in content:
+                    forbidden_str = ", ".join([f"`{p}`" for p in m.architecture.forbidden_packages])
+                    content = content.replace(
+                        sec4_target,
+                        f"- Prohibida la inclusión de paquetes o dependencias vetadas: {forbidden_str}.\n{sec4_target}",
+                    )
+
+        elif doc_name == "project_overview.md":
             content = content.replace("<una frase que describa el producto y su usuario principal>", m.identity.description)
             content = content.replace("<qué problema resuelve y por qué esta solución es mejor que la alternativa actual>", m.identity.description)
             module_rows = "\n".join([f"| `{s.name}` | {s.description} | `{s.path_roots[0] if s.path_roots else folder + '/' + s.name}` |" for s in m.scopes])
