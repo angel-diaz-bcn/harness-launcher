@@ -49,7 +49,7 @@ class DesignSystemGenerator:
         is_flutter = m.stack.stack_type in (StackType.FLUTTER, StackType.DART)
         ui_scope = self._get_ui_scope_slug()
 
-        return {
+        files = {
             "README.md": self._build_readme(today, is_flutter, ui_scope),
             "01-foundations.md": self._build_foundations(is_flutter),
             "02-tokens.md": self._build_tokens_doc(is_flutter),
@@ -59,6 +59,24 @@ class DesignSystemGenerator:
             "06-code-mapping.md": self._build_code_mapping(is_flutter, ui_scope),
             "tokens.json": self._resolve_tokens_json(),
         }
+
+        # Aplicar overrides semánticos enriquecidos de la IA si existen en el manifiesto
+        overrides: dict[str, str] = {}
+        if hasattr(m, "custom_design_overrides") and m.custom_design_overrides:
+            overrides.update(m.custom_design_overrides)
+        if hasattr(m.ui, "custom_design_overrides") and m.ui.custom_design_overrides:
+            overrides.update(m.ui.custom_design_overrides)
+
+        for doc_key, custom_text in overrides.items():
+            clean_key = Path(doc_key).name
+            if clean_key in files and custom_text and custom_text.strip():
+                # Reemplazar variables comunes si las hubiera
+                resolved = custom_text.strip()
+                resolved = resolved.replace("<PROYECTO>", m.identity.name)
+                resolved = resolved.replace("<YYYY-MM-DD>", today)
+                files[clean_key] = resolved
+
+        return files
 
     def _build_readme(self, today: str, is_flutter: str, ui_scope: str) -> str:
         m = self.manifest

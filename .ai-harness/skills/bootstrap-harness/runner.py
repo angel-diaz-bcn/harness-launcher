@@ -106,6 +106,27 @@ def main() -> None:
             prompter = Prompter(digest)
             manifest = prompter.collect()
 
+    # Descubrir y fusionar automáticamente cualquier documento normativo depositado en input/
+    input_p = Path(args.input_dir) if args.input_dir else (harness_dir / "input")
+    scanner = InputScanner(input_p)
+    ctx_ov, ds_ov = scanner.scan_overrides()
+
+    combined_ctx = dict(manifest.custom_context_overrides)
+    for k, v in ctx_ov.items():
+        if k not in combined_ctx:
+            combined_ctx[k] = v
+
+    combined_ds = dict(manifest.custom_design_overrides)
+    for k, v in ds_ov.items():
+        if k not in combined_ds:
+            combined_ds[k] = v
+
+    if combined_ctx != manifest.custom_context_overrides or combined_ds != manifest.custom_design_overrides:
+        manifest = manifest.model_copy(update={
+            "custom_context_overrides": combined_ctx,
+            "custom_design_overrides": combined_ds
+        })
+
     print(f"\n\033[1m[Bootstrap] Generando arnés para '{manifest.identity.name}'...\033[0m")
     if args.dry_run:
         print("\033[33m[MODO SIMULACIÓN --dry-run ACTIVO: no se escribirá en disco]\033[0m")

@@ -137,6 +137,10 @@ class UIConfig(BaseModel):
         default_factory=list,
         description="Componentes visuales clave requeridos por el producto",
     )
+    custom_design_overrides: dict[str, str] = Field(
+        default_factory=dict,
+        description="Contenido textual enriquecido generado para los documentos de design-system/ (01 a 06 y README)",
+    )
 
 
 class FailureModeItem(BaseModel):
@@ -194,6 +198,10 @@ class BootstrapManifest(BaseModel):
     custom_context_overrides: dict[str, str] = Field(
         default_factory=dict,
         description="Contenido textual enriquecido generado por la IA para cada documento de context/",
+    )
+    custom_design_overrides: dict[str, str] = Field(
+        default_factory=dict,
+        description="Contenido textual enriquecido generado por la IA para cada documento de design-system/ (01 a 06, README)",
     )
 
     @property

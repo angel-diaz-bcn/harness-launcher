@@ -25,13 +25,22 @@ Transforma la plantilla neutra en un entorno gobernado de ingeniería adaptado a
 
 ### 1. Modo Asistido por IA (Recomendado para Agentes)
 Cuando trabajas con un modelo de IA (Antigravity, Cline, Roo-Code):
-1. Depositar el PRD, brief o arquitectura previa en `.ai-harness/input/` (o explicárselo a la IA en el chat).
-2. El agente analiza el dominio, deduce los módulos reales (`scopes`), el stack y las políticas de persistencia/privacidad.
-3. El agente redacta un manifiesto estructurado (`manifest.yaml`) sin valores hardcodeados ni sesgos.
-4. El agente ejecuta:
+1. **Ingesta:** Depositar el PRD, brief o arquitectura previa en `.ai-harness/input/` (o explicárselo a la IA en el chat).
+2. **Análisis:** El agente analiza el dominio, deduce los módulos reales (`scopes`), el stack y las políticas de persistencia/privacidad.
+3. **Manifiesto:** El agente redacta un manifiesto estructurado (`manifest.yaml`) en `.ai-harness/input/`.
+4. **Scaffolding inicial:** El agente ejecuta:
    ```bash
    python .ai-harness/skills/bootstrap-harness/runner.py --manifest .ai-harness/input/manifest.yaml
    ```
+5. **Adaptación Semántica Profunda (OBLIGATORIO):**
+   Las plantillas generadas por el runner sirven **únicamente como referencia estructural** para no dejar archivos incompletos. **El agente de IA DEBE modificar y adaptar totalmente los ficheros generados para volcar toda la riqueza del proyecto real**:
+   - `context/project_overview.md` y `architecture_rules.md`: Reglas reales del PRD (invariantes, FSMs, topes de coste, kill switches, fronteras de capas y servicios).
+   - `context/security_privacy.md` y `platform_matrix.md`: Políticas de seguridad, tokens, plataformas y entornos reales.
+   - `context/glossary.md`: Términos de negocio del PRD.
+   - `design-system/` (si el producto tiene UI): Reescribir `03-layout.md` (alta densidad, layout real), `04-components.md` (componentes visuales reales) y `05-pages.md` (blueprint real de las páginas/pantallas del producto).
+   - `memory/failure_modes.md` y `ADR-0001` a `ADR-0003`: Modos de fallo y decisiones técnicas reales.
+   - `sdd/modules/*.md`: Requerimientos (`FR-*`), APIs y contratos funcionales según la especificación del negocio.
+6. **Verificación:** Ejecutar `harness-validator`, `preflight` y `sync-sdd`.
 
 ### 2. Modo Interactivo por Consola
 Para desarrolladores humanos respondiendo pregunta por pregunta en terminal:
@@ -47,6 +56,6 @@ python .ai-harness/skills/bootstrap-harness/runner.py --interactive --dry-run
 
 ## Protocolo de Gobernanza
 
-- No deja textos genéricos con etiquetas `<PROYECTO>` ni valores literales.
-- Si el producto es un backend o CLI, no fuerza tokens de color ni navegación por D-Pad.
-- Al concluir, el runner ejecuta automáticamente `harness-validator` para verificar que el arnés queda 100% en verde.
+- **Cero Plantillas Vacías:** Las plantillas sirven de referencia estructural; el agente debe sustituir los esquemas genéricos por el contenido real del proyecto.
+- **Sin Valores Inventados:** Toda regla, color o invariante proviene del PRD o de la confirmación del usuario.
+- **Verificación Completa:** Al concluir, las puertas de enlace (`harness-validator`, `preflight`, `sync-sdd`) deben pasar 100% limpias.

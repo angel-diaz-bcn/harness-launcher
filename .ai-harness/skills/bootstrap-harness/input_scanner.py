@@ -26,6 +26,8 @@ class InputDigest(BaseModel):
     detected_launch_cmd: str | None = None
     detected_test_cmd: str | None = None
     detected_modules: list[ScopeDefinition] = Field(default_factory=list)
+    detected_context_overrides: dict[str, str] = Field(default_factory=dict)
+    detected_design_overrides: dict[str, str] = Field(default_factory=dict)
     raw_summary: str = ""
 
 
@@ -69,6 +71,8 @@ class InputScanner:
         if workspace_stack:
             summary_parts.append(f"Workspace configurado con {workspace_stack.value}")
 
+        ctx_ov, ds_ov = self.scan_overrides()
+
         return InputDigest(
             files_found=found_names,
             suggested_name=suggested_name,
@@ -80,8 +84,51 @@ class InputScanner:
             detected_launch_cmd=ws_launch,
             detected_test_cmd=ws_test,
             detected_modules=detected_modules,
+            detected_context_overrides=ctx_ov,
+            detected_design_overrides=ds_ov,
             raw_summary=" | ".join(summary_parts) or "Workspace limpio",
         )
+
+    def scan_overrides(self) -> tuple[dict[str, str], dict[str, str]]:
+        """Descubre documentos normativos pre-redactados en .ai-harness/input/."""
+        context_docs = {
+            "system_identity.md", "harness_governance.md", "project_overview.md",
+            "architecture_rules.md", "project_structure.md", "coding_standards.md",
+            "testing_guidelines.md", "security_privacy.md", "platform_matrix.md",
+            "glossary.md", "sdd_framework.md", "ui-design-system.md",
+            "system-identity.md", "ui_design_system.md"
+        }
+        design_docs = {
+            "README.md", "01-foundations.md", "02-tokens.md", "03-layout.md",
+            "04-components.md", "05-pages.md", "06-code-mapping.md"
+        }
+        ctx_overrides: dict[str, str] = {}
+        ds_overrides: dict[str, str] = {}
+
+        if not self.input_dir.exists():
+            return ctx_overrides, ds_overrides
+
+        # Subcarpetas explícitas: .ai-harness/input/context/ y .ai-harness/input/design-system/
+        ctx_dir = self.input_dir / "context"
+        if ctx_dir.exists() and ctx_dir.is_dir():
+            for p in ctx_dir.glob("*.md"):
+                ctx_overrides[p.name] = p.read_text(encoding="utf-8", errors="ignore")
+
+        ds_dir = self.input_dir / "design-system"
+        if ds_dir.exists() and ds_dir.is_dir():
+            for p in ds_dir.glob("*.md"):
+                ds_overrides[p.name] = p.read_text(encoding="utf-8", errors="ignore")
+
+        # Ficheros en la raíz de .ai-harness/input/ que coincidan con nombres normativos
+        for p in self.input_dir.glob("*.md"):
+            clean_name = p.name.replace("-", "_")
+            if p.name in context_docs or clean_name in context_docs:
+                canonical = clean_name if clean_name in context_docs else p.name
+                ctx_overrides[canonical] = p.read_text(encoding="utf-8", errors="ignore")
+            elif p.name in design_docs:
+                ds_overrides[p.name] = p.read_text(encoding="utf-8", errors="ignore")
+
+        return ctx_overrides, ds_overrides
 
     def _scan_workspace_config(self) -> tuple[StackType | None, str | None, str | None, str | None, str | None, str | None]:
         ws = self.workspace_root

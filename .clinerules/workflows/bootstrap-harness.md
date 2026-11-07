@@ -22,15 +22,25 @@ Cuando el agente de IA colabora con el usuario para montar el arnés:
 2. **Paso 2: Generación del Manifiesto Enriquecido**
    - En lugar de forzar preguntas rígidas por terminal, la IA redacta un archivo de manifiesto canónico en `.ai-harness/input/manifest.yaml` con toda la información técnica real.
 
-3. **Paso 3: Compilación Atómica**
+3. **Paso 3: Compilación Inicial del Andamiaje (Scaffolding)**
    - El agente lanza la generación automática:
    ```bash
    python .ai-harness/skills/bootstrap-harness/runner.py --manifest .ai-harness/input/manifest.yaml
    ```
-   - El compilador toma los archivos `.md` de `.ai-harness/context/`, `design-system/`, `scopes/` y `sdd/templates/` como **plantillas vivas**, interpolando y personalizando cada uno con la información del manifiesto sin inventar valores.
+   - El compilador genera la estructura completa del arnés, scopes, andamiaje de diseño y configuración estructural.
 
-4. **Paso 4: Verificación Inmediata**
-   - El runner ejecuta automáticamente las puertas de calidad:
+4. **Paso 4: Adaptación Semántica Profunda (OBLIGATORIO PARA EL AGENTE DE IA)**
+   - **Regla de Oro:** Las plantillas generadas por el compilador sirven **únicamente como estructura y referencia de calidad** para evitar archivos incompletos o mal formateados. **El agente de IA DEBE modificar y adaptar totalmente los ficheros generados para incorporar todo el contenido real del proyecto** depositado en `.ai-harness/input/`:
+     - **`context/project_overview.md` y `architecture_rules.md`:** Incorporar las reglas de arquitectura reales del PRD (invariantes, FSMs, topes de coste, kill switches, fronteras de capas, integraciones y persistencia).
+     - **`context/security_privacy.md` y `platform_matrix.md`:** Detallar las políticas de seguridad, secretos y las plataformas y entornos reales.
+     - **`context/glossary.md`:** Incorporar el vocabulario y términos del dominio del PRD en la sección correspondiente.
+     - **`design-system/` (si el producto tiene UI):** Reescribir `03-layout.md` (filosofía de layout real, densidad por píxel, streaming/SSE si aplica), `04-components.md` (inventario de componentes visuales reales del PRD) y `05-pages.md` (blueprint exacto de las páginas/pantallas del producto, ej. Grid de 4 cuadrantes).
+     - **`memory/failure_modes.md` y `ADR-0001` a `ADR-0003`:** Personalizar los modos de fallo y decisiones técnicas según el stack y la lógica de negocio real.
+     - **`sdd/modules/*.md`:** Completar requerimientos (`FR-*`), tipos y contratos funcionales según la especificación del negocio.
+   - **Cero plantillas vacías:** El bootstrap NO se considera completado si los documentos contienen descripciones esquemáticas o componentes genéricos no pertenecientes al producto.
+
+5. **Paso 5: Verificación Inmediata con Quality Gates**
+   - El agente ejecuta las puertas de calidad:
    ```bash
    python .ai-harness/skills/harness-validator/runner.py
    python .ai-harness/skills/preflight/runner.py
