@@ -16,6 +16,7 @@ class MemoryGenerator:
 
     def generate_all(self) -> dict[str, str]:
         files: dict[str, str] = {
+            "README.md": self._memory_readme(),
             "failure_modes.md": self._failure_modes(),
             "decisions/README.md": self._decisions_readme(),
             "decisions/ADR-0001-stack-base.md": self._adr_0001(),
@@ -24,6 +25,45 @@ class MemoryGenerator:
             "ephemeral_feedback/README.md": self._ephemeral_readme(),
         }
         return files
+
+    def _memory_readme(self) -> str:
+        m = self.manifest
+        return f"""# Subsistema de Memoria y Decisiones — {m.identity.name}
+
+La memoria del arnés conserva lo aprendido, registra decisiones técnicas inmutables (ADRs) y previene la repetición de fallos recurrentes.
+
+---
+
+## 1. Componentes
+
+```
+memory/
+├── failure_modes.md          # Anti-patrones de IA y código canónico verificado
+├── decisions/                # ADRs de arquitectura (ADR-0001, ADR-0002, etc.)
+├── ephemeral_feedback/       # Logs efímeros de la última ejecución fallida (no versionado)
+├── sync-state.json           # Línea base de sincronización generada por sync-sdd
+└── README.md
+```
+
+---
+
+## 2. Ciclo de Auto-Corrección
+
+1. `preflight` o `harness-validator` detectan un fallo o violación de frontera.
+2. El fallo se escribe en `ephemeral_feedback/` con archivo, regla incumplida y mensaje de error.
+3. El agente de IA lee el fallo, corrige la causa raíz y vuelve a validar.
+4. Si el error es recurrente o viola una invariante, se documenta como nuevo modo de fallo en `failure_modes.md`.
+5. Si la corrección altera una frontera o decisión estructural, se registra un nuevo ADR numerado en `decisions/`.
+
+---
+
+## 3. Reglas de Gobernanza de Memoria
+
+- Los logs efímeros nunca sustituyen a `failure_modes.md`.
+- Todo modo de fallo debe declarar síntoma, causa raíz, ejemplo de código erróneo, código canónico y regla de mitigación.
+- Los ADRs son estrictamente inmutables: si una decisión cambia, se añade un nuevo ADR que la sustituye.
+- Cero secretos o datos privados en `ephemeral_feedback/` ni en `failure_modes.md`.
+"""
 
     def _decisions_readme(self) -> str:
         return """# Decisiones de arquitectura (ADR)

@@ -248,10 +248,20 @@ invariants:
     # 3. Scopes Contractuales (.ai-harness/scopes/)
     # -------------------------------------------------------------------------
     def _generate_scope_files(self) -> None:
+        target_scopes_dir = self.harness_dir / "scopes"
         gen = ScopeGenerator(self.manifest)
+        valid_scope_files = set()
         for scope in self.manifest.scopes:
+            fname = f"block_{scope.name}.md"
+            valid_scope_files.add(fname)
             content = gen.generate_scope(scope)
-            self._write(self.harness_dir / "scopes" / f"block_{scope.name}.md", content)
+            self._write(target_scopes_dir / fname, content)
+
+        # Si hay scopes antiguos o huérfanos que no pertenecen a los scopes del proyecto, limpiarlos
+        if target_scopes_dir.exists() and not self.dry_run and self.manifest.identity.slug != "harness-launcher":
+            for old_f in target_scopes_dir.glob("block_*.md"):
+                if old_f.name not in valid_scope_files:
+                    old_f.unlink()
 
     # -------------------------------------------------------------------------
     # 4. Suite completa de Sistema de Diseño (.ai-harness/design-system/)
@@ -283,16 +293,24 @@ invariants:
                     self._write(target_templates / tpl.name, content)
 
         gen = SDDGenerator(self.manifest)
+        valid_modules = {f"{s.name}.md" for s in self.manifest.scopes} | {"README.md", "core.md"}
         for filepath, content in gen.generate_all().items():
             self._write(self.harness_dir / "sdd" / filepath, content)
+
+        # Si hay módulos huérfanos en modules/, eliminarlos
+        target_modules_dir = self.harness_dir / "sdd" / "modules"
+        if target_modules_dir.exists() and not self.dry_run and self.manifest.identity.slug != "harness-launcher":
+            for old_m in target_modules_dir.glob("*.md"):
+                if old_m.name not in valid_modules:
+                    old_m.unlink()
 
     # -------------------------------------------------------------------------
     # 7. Fixtures Deterministas (.ai-harness/fixtures/)
     # -------------------------------------------------------------------------
     def _generate_fixtures_readme(self) -> None:
-        content = """# Fixtures deterministas
+        content = f"""# Fixtures Deterministas — {self.manifest.identity.name}
 
-Datos de prueba reproducibles, sin red y sin servicios externos. Un fixture es
+Datos de prueba reproducibles, sin red y sin servicios externos para {self.manifest.identity.name}. Un fixture es
 entrada conocida con salida esperada: si cambia el fixture, cambia el test.
 
 ## Estructura sugerida

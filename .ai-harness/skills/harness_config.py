@@ -24,7 +24,7 @@ CONFIG_FILENAME = "harness.config.yaml"
 # mínima sin romper los validadores. Lo que no esté aquí debe estar en el YAML.
 DEFAULTS: dict[str, Any] = {
     "version": 1,
-    "project": {"name": "<PROYECTO>", "slug": "<slug>", "stack": "generic"},
+    "project": {"name": "Unnamed Project", "slug": "unnamed-project", "stack": "generic"},
     "context": {"required": [], "agents_must_reference": []},
     "scopes": {
         "required": [],

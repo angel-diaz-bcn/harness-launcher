@@ -68,7 +68,7 @@ python .ai-harness/skills/harness-validator/runner.py --json
 
 ## Checks y Verificaciones
 
-1. **Contexto Normativo (`check_context.py`):** Verifica que los 12 documentos canónicos existan y contengan contenido sustantivo sin marcadores pendientes (`<PROYECTO>`).
+1. **Contexto Normativo (`check_context.py`):** Verifica que los 12 documentos canónicos existan y contengan contenido sustantivo sin marcadores pendientes o sin resolver.
 2. **Scopes Modulares (`check_context.py`):** Asegura que cada `block_*.md` tenga rutas autorizadas y ninguna prohibida.
 3. **Memoria Preventiva (`check_memory.py`):** Comprueba el número mínimo de modos de fallo y la presencia de ADRs requeridos.
 4. **Especificaciones SDD (`check_sdd.py`):** Audita frontmatter obligatorio, presencia de `user_story.md`, trazabilidad `FR-*`/`ST-*` y mapa de implementación.
@@ -221,6 +221,14 @@ python .ai-harness/skills/git-publish/runner.py push -m "<tipo>: <descripcion de
 2. **Puertas previas:** Ejecuta internamente `harness-validator` y `preflight`. Si alguna falla, la publicación se aborta automáticamente sin modificar el repositorio remoto.
 """
         return out
+
+    def generate_clinerules(self) -> dict[str, str]:
+        """Devuelve diccionario relativo a .clinerules/ con rules.md y todos los workflows."""
+        files = {
+            "rules.md": self.generate_clinerules_rules(),
+        }
+        files.update(self.generate_clinerules_workflows())
+        return files
 
     def generate_clinerules_rules(self) -> str:
         m = self.m
